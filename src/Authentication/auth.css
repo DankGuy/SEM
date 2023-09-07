@@ -1,0 +1,26 @@
+/*to target the password and confirm password*/
+.signup-container .ant-input-affix-wrapper {
+  width: 20vw;
+}
+
+.signup-container input.ant-input {
+  width: 20vw;
+  font-size: 1.3em;
+}
+
+.signup-container .ant-form-item {
+  max-width: 20vw;
+}
+
+.signin-container .ant-input-affix-wrapper {
+  width: 20vw;
+}
+
+.signin-container input.ant-input {
+  width: 20vw;
+  font-size: 1.3em;
+}
+
+.signin-container .ant-form-item {
+  max-width: 20vw;
+}

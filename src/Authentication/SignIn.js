@@ -1,7 +1,7 @@
 import React from "react";
 import { Button, Form, Input, Card, message } from "antd";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../supabase-client";
 import TarumtLogo from "../images/tarumt-logo.png";
 import LoginIllustration from "../images/login-illustration.jpg";
@@ -21,6 +21,8 @@ const formItemLayout = {
 const SignIn = () => {
   const [form] = Form.useForm();
 
+  const navigate = useNavigate();
+
   const [isHovered, setIsHovered] = useState(false);
   const hoverStyle = {
     color: isHovered ? "#430f58" : "#6643b5",
@@ -28,14 +30,24 @@ const SignIn = () => {
 
   const signIn = async (values) => {
     const { email, password } = values;
-    const { error } = await supabase.auth.signInWithPassword({
+    const {
+      data: { user, session },
+      error,
+    } = await supabase.auth.signInWithPassword({
       email: email,
       password: password,
     });
     if (error) {
       message.error(error.message);
     } else {
-      message.success("Signed in successfully!");
+      if (user && session) {
+        if (user.user_metadata.userType === "applicant") {
+          navigate("/applicant");
+        }
+        else {
+          navigate("/admin");
+        }
+      }
     }
   };
 
@@ -134,7 +146,7 @@ const SignIn = () => {
                 },
               ]}
             >
-              <Input placeholder="E-mail" autoComplete="true"/>
+              <Input placeholder="E-mail" autoComplete="true" />
             </Form.Item>
             <Form.Item
               name="password"

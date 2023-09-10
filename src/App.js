@@ -7,6 +7,7 @@ import SignUp from "./Authentication/SignUp";
 import Applicant from "./Applicant/Applicant";
 import ApplicantLayout from "./Applicant/ApplicantLayout";
 import PersonalInformation from "./Applicant/PersonalInformation";
+import Questions from "./Applicant/Questions";
 
 import Admin from "./Admin/Admin";
 import AdminLayout from "./Admin/AdminLayout";
@@ -29,6 +30,7 @@ function App() {
             <Route path="/applicant/" element={<ApplicantLayout />}>
               <Route index element={<Applicant />} />
               <Route path="personalInformation" element={<PersonalInformation />} />
+              <Route path="questions" element={<Questions />} />
               <Route path="*" element={<NotFound />} />
             </Route>
             <Route path="*" element={<NotFound />} />

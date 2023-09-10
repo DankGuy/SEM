@@ -108,8 +108,9 @@ const ApplicantLayout = () => {
             cursor: "pointer",
           }}
           onClick={() => {
-            navigate("/applicant");
             setCurrent("/applicant");
+            localStorage.setItem("current", "/applicant");
+            navigate("/applicant");
           }}
         >
           <img src={TarumtPureLogo} alt="Logo" height="50px" />

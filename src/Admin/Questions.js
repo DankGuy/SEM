@@ -11,20 +11,54 @@ import {
   Form,
   Input,
   message,
+  Pagination,
 } from "antd";
-import { CommentOutlined, QuestionCircleOutlined, InfoCircleOutlined } from "@ant-design/icons";
+import {
+  CommentOutlined,
+  QuestionCircleOutlined,
+  InfoCircleOutlined,
+} from "@ant-design/icons";
 import { supabase } from "../supabase-client";
 import Loading from "../Components/Loading";
 
 const Questions = () => {
-  const [question, setQuestion] = useState(null);
+  const [question, setQuestion] = useState([]);
   const [quesID, setQuesID] = useState(null);
+  const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [modalVisibilities, setModalVisibilities] = useState([]);
   const [fetchTrigger, setFetchTrigger] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(10); // Set your desired page size
+  const [modalVisibility, setModalVisibility] = useState({});
 
   const { Text } = Typography;
   const { form } = Form.useForm();
+
+  const getUser = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (user) {
+      let { data, error } = await supabase
+        .from("admin")
+        .select("*")
+        .eq("admin_id", user.id);
+
+      if (error) {
+        console.log(error);
+        return;
+      }
+      setUser(data[0]);
+    }
+    setIsLoading(false);
+  };
+
+  const paginateData = (data, page, size) => {
+    const startIndex = (page - 1) * size;
+    const endIndex = startIndex + size;
+    return data.slice(startIndex, endIndex);
+  };
 
   const fetchData = async () => {
     const { data, error } = await supabase
@@ -47,14 +81,13 @@ const Questions = () => {
         return statusOrder[a.status] - statusOrder[b.status];
       });
 
-      const listingsWithModalVisibility = sortedListings.map((listing) => ({
-        ...listing,
-        isModalVisible: false,
-      }));
-
-      setQuestion(listingsWithModalVisibility);
+      setQuestion(sortedListings);
       setIsLoading(false);
     }
+  };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
   };
 
   const handleSubmission = async (values) => {
@@ -65,6 +98,7 @@ const Questions = () => {
           answer: values.answer,
           status: "answered",
           answered_at: new Date().toISOString(),
+          answer_by: user.admin_id,
         },
       ])
       .eq("question_id", quesID);
@@ -82,8 +116,12 @@ const Questions = () => {
   };
 
   useEffect(() => {
+    setUser(getUser());
+  }, []);
+
+  useEffect(() => {
     fetchData();
-  }, [fetchTrigger]);
+  }, [user, fetchTrigger]);
 
   return isLoading ? (
     <Loading />
@@ -97,7 +135,7 @@ const Questions = () => {
     >
       <div style={{ padding: "20px" }}>
         <Row gutter={[16, 16]}>
-          {question?.map((item, index) => {
+          {paginateData(question, currentPage, pageSize).map((item, index) => {
             return (
               <Col key={item.question_id} xs={24} sm={12}>
                 <Card
@@ -149,12 +187,12 @@ const Questions = () => {
                     <Button
                       type="link"
                       onClick={() => {
-                        const updatedListings = question.map((l) =>
-                          l.question_id === item.question_id
-                            ? { ...l, isModalVisible: true }
-                            : l
-                        );
-                        setQuestion(updatedListings);
+                        // Open the modal for the selected question
+                        setModalVisibility({
+                          ...modalVisibility,
+                          [item.question_id]: true,
+                        });
+                        setQuesID(item.question_id);
                       }}
                       {...(item.status === "answered" && { disabled: true })}
                     >
@@ -171,7 +209,13 @@ const Questions = () => {
                     padding: "1em",
                   }}
                 >
-                  <span style={{ marginRight: "10px", marginLeft: "2px", fontSize: "1rem" }}>
+                  <span
+                    style={{
+                      marginRight: "10px",
+                      marginLeft: "2px",
+                      fontSize: "1rem",
+                    }}
+                  >
                     <Tooltip title="Answer">
                       <InfoCircleOutlined />
                     </Tooltip>
@@ -180,15 +224,14 @@ const Questions = () => {
                 </Card>
                 <Modal
                   title={item.question}
-                  open={item.isModalVisible} // Use the index to determine the visibility
+                  open={modalVisibility[item.question_id] || false}
                   onCancel={() => {
-                    // Update the isModalVisible property for this listing
-                    const updatedListings = question.map((l) =>
-                      l.question_id === item.question_id
-                        ? { ...l, isModalVisible: false }
-                        : l
-                    );
-                    setQuestion(updatedListings);
+                    // Close the modal for the selected question
+                    setModalVisibility({
+                      ...modalVisibility,
+                      [item.question_id]: false,
+                    });
+                    setQuesID(null); // Clear the question ID when the modal is closed
                   }}
                   footer={null}
                 >
@@ -230,13 +273,11 @@ const Questions = () => {
                           <Button
                             htmlType="reset"
                             onClick={() => {
-                              // Update the isModalVisible property for this listing
-                              const updatedListings = question.map((l) =>
-                                l.question_id === item.question_id
-                                  ? { ...l, isModalVisible: false }
-                                  : l
-                              );
-                              setQuestion(updatedListings);
+                              // Close the modal for the selected question
+                              setModalVisibility({
+                                ...modalVisibility,
+                                [item.question_id]: false,
+                              });
                             }}
                           >
                             Cancel
@@ -248,7 +289,10 @@ const Questions = () => {
                             htmlType="submit"
                             style={{ marginLeft: "10px" }}
                             onClick={() => {
-                              setQuesID(item.question_id);
+                              setModalVisibility({
+                                ...modalVisibility,
+                                [item.question_id]: false,
+                              });
                             }}
                           >
                             Submit
@@ -262,6 +306,17 @@ const Questions = () => {
             );
           })}
         </Row>
+        <Pagination
+          current={currentPage}
+          pageSize={pageSize}
+          total={question?.length}
+          onChange={handlePageChange}
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            marginTop: "1rem",
+          }}
+        />
       </div>
     </div>
   );

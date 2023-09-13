@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, memo } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Breadcrumb, Layout, Menu, theme } from "antd";
 import { supabase } from "../supabase-client";
-import Loading from "../Components/Loading";
 import TarumtPureLogo from "../images/tarumt-pure-logo.png";
+import ChatBot from "./Chatbot";
 
 const { Header, Content, Footer } = Layout;
 
@@ -88,74 +88,79 @@ const ApplicantLayout = () => {
   }, []);
 
   return (
-    <Layout className="layout">
-      <Header
-        style={{
-          position: "sticky",
-          top: 0,
-          zIndex: 1,
-          width: "100%",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <div
+      <Layout className="layout">
+        <Header
           style={{
+            position: "sticky",
+            top: 0,
+            zIndex: 1,
+            width: "100%",
             display: "flex",
-            justifyContent: "center",
+            justifyContent: "space-between",
             alignItems: "center",
-            cursor: "pointer",
-          }}
-          onClick={() => {
-            setCurrent("/applicant");
-            localStorage.setItem("current", "/applicant");
-            navigate("/applicant");
           }}
         >
-          <img src={TarumtPureLogo} alt="Logo" height="50px" />
-        </div>
-        <Menu
-          theme="dark"
-          mode="horizontal"
-          onClick={handleClick}
-          selectedKeys={[current]}
-          items={items}
-          style={{ width: "100%", display: "flex", justifyContent: "flex-end" }}
-        />
-      </Header>
-      <Content
-        style={{
-          padding: "0 50px",
-        }}
-      >
-        <Breadcrumb
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              cursor: "pointer",
+            }}
+            onClick={() => {
+              setCurrent("/applicant");
+              localStorage.setItem("current", "/applicant");
+              navigate("/applicant");
+            }}
+          >
+            <img src={TarumtPureLogo} alt="Logo" height="50px" />
+          </div>
+          <Menu
+            theme="dark"
+            mode="horizontal"
+            onClick={handleClick}
+            selectedKeys={[current]}
+            items={items}
+            style={{
+              width: "100%",
+              display: "flex",
+              justifyContent: "flex-end",
+            }}
+          />
+        </Header>
+        <Content
           style={{
-            margin: "16px 0",
+            padding: "0 50px",
           }}
-          items={breadcrumb.map((item) => ({
-            key: item.key,
-            title: item.label,
-          }))}
-        />
+        >
+          <Breadcrumb
+            style={{
+              margin: "16px 0",
+            }}
+            items={breadcrumb.map((item) => ({
+              key: item.key,
+              title: item.label,
+            }))}
+          />
 
-        <div
-          className="site-layout-content"
+          <div
+            className="site-layout-content"
+            style={{
+              background: colorBgContainer,
+            }}
+          >
+            <Outlet />
+          </div>
+        </Content>
+        <Footer
           style={{
-            background: colorBgContainer,
+            textAlign: "center",
           }}
         >
-          <Outlet />
-        </div>
-      </Content>
-      <Footer
-        style={{
-          textAlign: "center",
-        }}
-      >
-        TARUMT FOCS ©2023
-      </Footer>
-    </Layout>
+          TARUMT FOCS ©2023
+        </Footer>
+        <ChatBot />
+      </Layout>
   );
 };
 

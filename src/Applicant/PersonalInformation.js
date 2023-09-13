@@ -263,7 +263,7 @@ const PersonalInformation = () => {
                 marginRight: "1rem",
               }}
             >
-              Reset Form
+              Undo Changes
             </Button>
           </Form.Item>
           <Form.Item>

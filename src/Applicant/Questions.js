@@ -11,6 +11,7 @@ import {
   Form,
   Input,
   message,
+  Pagination,
 } from "antd";
 import { QuestionCircleOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import { supabase } from "../supabase-client";
@@ -22,6 +23,10 @@ const Questions = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [fetchTrigger, setFetchTrigger] = useState(0);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10); // Set your desired page size
+  const [displayedQuestions, setDisplayedQuestions] = useState([]);
 
   const { Text } = Typography;
   const { form } = Form.useForm();
@@ -44,6 +49,12 @@ const Questions = () => {
       setUser(data[0]);
     }
     setIsLoading(false);
+  };
+
+  const paginateData = (data, page, size) => {
+    const startIndex = (page - 1) * size;
+    const endIndex = startIndex + size;
+    return data.slice(startIndex, endIndex);
   };
 
   const fetchData = async () => {
@@ -73,12 +84,23 @@ const Questions = () => {
         return statusOrder[a.status] - statusOrder[b.status];
       });
 
+      const paginatedData = paginateData(data, currentPage, pageSize);
+
       setQuestion(data);
+      setDisplayedQuestions(paginatedData);
+      setIsLoading(false);
     }
   };
 
   const handleCancel = () => {
     setIsModalVisible(false);
+  };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    // Update displayedQuestions when the page changes
+    const paginatedData = paginateData(question, page, pageSize);
+    setDisplayedQuestions(paginatedData);
   };
 
   const handleSubmission = async (values) => {
@@ -108,7 +130,7 @@ const Questions = () => {
 
   useEffect(() => {
     fetchData();
-  }, [user, fetchTrigger]);
+  }, [user, fetchTrigger, currentPage, pageSize]);
 
   return isLoading ? (
     <Loading />
@@ -137,7 +159,7 @@ const Questions = () => {
 
       <div style={{ padding: "20px" }}>
         <Row gutter={[16, 16]}>
-          {question?.map((item, index) => {
+          {displayedQuestions?.map((item, index) => {
             return (
               <Col key={item.question_id} xs={24} sm={12}>
                 <Card
@@ -194,7 +216,13 @@ const Questions = () => {
                     padding: "1em",
                   }}
                 >
-                  <span style={{ marginRight: "10px", marginLeft: "2px", fontSize: "1rem" }}>
+                  <span
+                    style={{
+                      marginRight: "10px",
+                      marginLeft: "2px",
+                      fontSize: "1rem",
+                    }}
+                  >
                     <Tooltip title="Answer">
                       <InfoCircleOutlined />
                     </Tooltip>
@@ -205,6 +233,17 @@ const Questions = () => {
             );
           })}
         </Row>
+        <Pagination
+          current={currentPage}
+          pageSize={pageSize}
+          total={question?.length} // Total number of questions
+          onChange={handlePageChange}
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            marginTop: "1rem",
+          }}
+        />
       </div>
       <Modal
         title="Post Question"

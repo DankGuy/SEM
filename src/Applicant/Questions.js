@@ -14,7 +14,6 @@ import {
 } from "antd";
 import { supabase } from "../supabase-client";
 import Loading from "../Components/Loading";
-import { useForm } from "antd/es/form/Form";
 
 const Questions = () => {
   const [question, setQuestion] = useState(null);
@@ -24,7 +23,7 @@ const Questions = () => {
   const [fetchTrigger, setFetchTrigger] = useState(0);
 
   const { Text } = Typography;
-  const { form } = useForm();
+  const { form } = Form.useForm();
 
   const getUser = async () => {
     const {
@@ -56,7 +55,7 @@ const Questions = () => {
       .from("question")
       .select("*")
       .order("created_at", { ascending: false })
-      .order("answered_at", { ascending: true })
+      .order("answered_at", { ascending: false })
       .eq("author", user.applicant_id);
 
     if (error) {
@@ -91,6 +90,7 @@ const Questions = () => {
 
     if (error) {
       console.log(error);
+      message.error("Failed to post answer due to technical error! Contact support to assist you.");
       return;
     }
 
@@ -213,7 +213,7 @@ const Questions = () => {
                 },
               ]}
             >
-              <Input.TextArea rows={4} />
+              <Input.TextArea rows={4} placeholder="Question" />
             </Form.Item>
             <div
               style={{

@@ -11,6 +11,7 @@ import Questions from "./Applicant/Questions";
 
 import Admin from "./Admin/Admin";
 import AdminLayout from "./Admin/AdminLayout";
+import AdminQuestions from "./Admin/Questions";
 
 import { useAuth } from "./Authentication/AuthProvider";
 import NotFound from "./Components/NotFound";
@@ -45,6 +46,7 @@ function App() {
 
             <Route path="/admin/" element={<AdminLayout />}>
               <Route index element={<Admin />} />
+              <Route path="questions" element={<AdminQuestions />} />
               <Route path="*" element={<NotFound />} />
             </Route>
             <Route path="*" element={<NotFound />} />

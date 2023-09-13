@@ -99,6 +99,9 @@ const AdminLayout = () => {
           style={{
             background: colorBgContainer,
             height: "100vh",
+            position: "fixed",
+            left: 0,
+            zIndex: 1,
           }}
         >
           <Menu
@@ -116,6 +119,7 @@ const AdminLayout = () => {
         <Layout
           style={{
             padding: "0 24px 24px",
+            marginLeft: 200,
           }}
         >
           <Breadcrumb

@@ -12,6 +12,7 @@ import {
   Input,
   message,
 } from "antd";
+import { QuestionCircleOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import { supabase } from "../supabase-client";
 import Loading from "../Components/Loading";
 
@@ -90,7 +91,9 @@ const Questions = () => {
 
     if (error) {
       console.log(error);
-      message.error("Failed to post answer due to technical error! Contact support to assist you.");
+      message.error(
+        "Failed to post answer due to technical error! Contact support to assist you."
+      );
       return;
     }
 
@@ -143,7 +146,13 @@ const Questions = () => {
                       ellipsis={{
                         tooltip: item.question,
                       }}
+                      style={{ fontSize: "1rem" }}
                     >
+                      <span style={{ marginRight: "10px" }}>
+                        <Tooltip title="Question">
+                          <QuestionCircleOutlined />
+                        </Tooltip>
+                      </span>
                       {item.question}
                     </Text>
                   }
@@ -176,7 +185,20 @@ const Questions = () => {
                       </Tooltip>
                     </div>
                   }
+                  headStyle={{
+                    backgroundColor: "#D5DEF5",
+                    padding: "0.5em 1em",
+                  }}
+                  bodyStyle={{
+                    backgroundColor: "#F0F5FF",
+                    padding: "1em",
+                  }}
                 >
+                  <span style={{ marginRight: "10px", marginLeft: "2px", fontSize: "1rem" }}>
+                    <Tooltip title="Answer">
+                      <InfoCircleOutlined />
+                    </Tooltip>
+                  </span>
                   {item.answer}
                 </Card>
               </Col>

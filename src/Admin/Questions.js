@@ -12,7 +12,7 @@ import {
   Input,
   message,
 } from "antd";
-import { CommentOutlined } from "@ant-design/icons";
+import { CommentOutlined, QuestionCircleOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import { supabase } from "../supabase-client";
 import Loading from "../Components/Loading";
 
@@ -106,7 +106,13 @@ const Questions = () => {
                       ellipsis={{
                         tooltip: item.question,
                       }}
+                      style={{ fontSize: "1rem" }}
                     >
+                      <span style={{ marginRight: "10px" }}>
+                        <Tooltip title="Question">
+                          <QuestionCircleOutlined />
+                        </Tooltip>
+                      </span>
                       {item.question}
                     </Text>
                   }
@@ -156,7 +162,20 @@ const Questions = () => {
                       Answer
                     </Button>,
                   ]}
+                  headStyle={{
+                    backgroundColor: "#D5DEF5",
+                    padding: "0.5em 1em",
+                  }}
+                  bodyStyle={{
+                    backgroundColor: "#F0F5FF",
+                    padding: "1em",
+                  }}
                 >
+                  <span style={{ marginRight: "10px", marginLeft: "2px", fontSize: "1rem" }}>
+                    <Tooltip title="Answer">
+                      <InfoCircleOutlined />
+                    </Tooltip>
+                  </span>
                   {item.answer}
                 </Card>
                 <Modal

@@ -16,6 +16,9 @@ import AdminQuestions from "./Admin/Questions";
 import { useAuth } from "./Authentication/AuthProvider";
 import NotFound from "./Components/NotFound";
 
+import StaffDirectory from "./StaffDirectory/StaffDirectory";
+import Staff from "./StaffDirectory/Staff";
+
 function App() {
   const { userSession, auth } = useAuth();
 
@@ -63,6 +66,8 @@ function App() {
         <Route path="/" element={<Navigate to="/signIn" />} />
         <Route path="/signIn" element={<SignIn />} />
         <Route path="/signUp" element={<SignUp />} />
+        <Route path='/staffDirectory' element={< StaffDirectory />} />
+        <Route path='/staffDirectory/staff' element={< Staff />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>

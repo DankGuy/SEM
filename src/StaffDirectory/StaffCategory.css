@@ -1,0 +1,39 @@
+.staffDirectoryContainer {
+    display: flex;
+    justify-content: stretch;
+    margin: 30px;
+    column-gap: 30px;
+}
+
+.searchBarContainer {
+    width: 300px;
+}
+
+.collapseContentContainer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    row-gap: 10px;
+    column-gap: 8px;
+}
+
+.collapseContent {
+    padding: 8px 2px;
+    border: 1px solid #ccc;
+    width: 200px;
+    border-radius: 10px;
+    justify-content: center;
+}
+
+.collapseContent > *{
+    margin: auto;
+    text-align: center;
+}
+
+.collapseContent img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 10px;
+    height: 150px;
+}

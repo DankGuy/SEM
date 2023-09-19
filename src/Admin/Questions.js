@@ -220,7 +220,9 @@ const Questions = () => {
                       <InfoCircleOutlined />
                     </Tooltip>
                   </span>
-                  {item.answer}
+                  <div style={{ width: "100%", wordBreak: "break-word" }}>
+                    {item.answer}
+                  </div>
                 </Card>
                 <Modal
                   title={item.question}

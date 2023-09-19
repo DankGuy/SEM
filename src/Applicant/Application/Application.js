@@ -57,11 +57,11 @@ const Application = () => {
 
   useEffect(() => {
     setUser(getUser());
-    loggedUser = getUser();
+
   }, []);
 
   useEffect(() => {
-    console.log("userLogged: " + user);
+    loggedUser = user;
   }, [user]);
 
   // Options
@@ -489,7 +489,6 @@ const Application = () => {
                 placeholder="Please select yor desired programme"
                 onChange={handleProgrammeChange}
                 options={programmeOptions}
-                value={programme}
                 style={{
                   width: "100%",
                 }}
@@ -532,7 +531,6 @@ const Application = () => {
                     placeholder="Please select your previous qualification"
                     onChange={handlePreviousQualificationChange}
                     options={previousQualificationOptions}
-                    value={previousQualification}
                     disabled={
                       qualification.includes(
                         "Tunku Abdul Rahman University College (TARUMT)"
@@ -614,7 +612,7 @@ function assessment(
     console.log("user" + loggedUser.applicant_id);
     const { error } = supabase
     .from('applicant')
-    .update({ isApplied: 'TRUE' })
+    .update({ isApplied: 1 })
     .eq('applicant_id', loggedUser.applicant_id)
     if (error) {
       console.log(error)

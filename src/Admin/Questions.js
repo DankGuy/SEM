@@ -110,7 +110,7 @@ const Questions = () => {
       );
       return;
     } else {
-      message.success("Question posted successfully!");
+      message.success("Question answered successfully!");
       setFetchTrigger(fetchTrigger + 1);
     }
   };

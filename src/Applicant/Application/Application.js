@@ -16,13 +16,17 @@ let applyResultMsg = null;
 
 let loggedUser = null;
 
+
 const Application = () => {
   const T = require("tesseract.js");
   const [user, setUser] = useState(null);
+
   // UI
   const [loading, setLoading] = useState(false);
   const [hideCgpa, setHideCgpa] = useState(true);
   const [messageApi, contextHolder] = message.useMessage();
+  const [isApplied, setIsApplied] = useState(false);
+  const [trigger, setTrigger] = useState(0);
 
   // Attributes
   const [qualification, setQualification] = useState("");
@@ -346,7 +350,7 @@ const Application = () => {
     messageApi.open({
       type: 'error',
       content: msg,
-      duration: 5,
+      duration: 2,
     });
   };
 
@@ -382,7 +386,7 @@ const Application = () => {
         });
 
         if(subjectsAndGrades.length === 0) {
-          sendMessage("No subjects found from your certificate. Please try to upload your certificates in the highest quality.");
+          sendMessage("No subjects and grades found from your certificate. Please try to upload your certificates in the highest quality.");
         }else{
           assessment(
             qualification.toString(),
@@ -459,31 +463,440 @@ const Application = () => {
     });
   };
 
+  async function fetchData() {
+    try {
+          const { data, error } = await supabase
+            .from("applicant")
+            .select("*")
+            .eq("applicant_id", user.applicant_id);
+
+          if (error) {
+            console.log(error);
+            return;
+          }
+
+          if (data[0].isApplied === 1) {
+            setIsApplied(true);
+          }
+        } catch (error) {
+      console.error("Error fetching data:", error.message);
+    }
+  }
+
+  //fetch data
+  useEffect(() => {
+    fetchData();
+  }, [user, trigger]);
+
+  const assessment = (
+    qualification,
+    previousQualificationSubjectsAndGrades,
+    cgpa,
+    previousQualification,
+    programme
+  ) => {
+    const updateResult = async () => {
+      const { error } = await supabase
+        .from("applicant")
+        .update({ isApplied: 1 })
+        .eq("applicant_id", user.applicant_id);
+      if (error) {
+        console.log(error);
+        return;
+      }
+      console.log("Successfully updated");
+      setTrigger(trigger + 1);
+    };
+
+    const qualifcationList = [
+      "Tunku Abdul Rahman University College (TARUMT),Foundation,Foundation In Computing Track A",
+      "Tunku Abdul Rahman University College (TARUMT),Foundation,Foundation In Computing Track B",
+      "Tunku Abdul Rahman University College (TARUMT),Foundation,Foundation In Science Track A",
+      "Tunku Abdul Rahman University College (TARUMT),Diploma,Diploma in Computer Science",
+      "Tunku Abdul Rahman University College (TARUMT),Diploma,Diploma in Information Systems",
+      "Tunku Abdul Rahman University College (TARUMT),Diploma,Diploma in Information Technology",
+      "Tunku Abdul Rahman University College (TARUMT),Diploma,Diploma in Software Engineering",
+      "Pre-University,STPM",
+      "Pre-University,A-Level",
+      "Pre-University,UEC",
+      "Other Institution of Higher Learning (IHL),IHL Foundation",
+      "Other Institution of Higher Learning (IHL),IHL Diploma",
+    ];
+
+    console.log("programme: " + programme);
+
+    if (
+      programme ===
+      "Bachelor of Science in Management Mathematics with Computing"
+    ) {
+      // Management Mathematics with Computing
+      console.log("programme is " + programme);
+      console.log("qualification is " + qualification);
+      console.log("qualification is " + qualifcationList[0]);
+      const result = ManagementMathematicsWithComputingAssessment(
+        qualification,
+        cgpa,
+        previousQualification,
+        previousQualificationSubjectsAndGrades
+      );
+      if (
+        qualification === qualifcationList[0] ||
+        qualification === qualifcationList[1] ||
+        qualification === qualifcationList[2]
+      ) {
+        if (
+          result.mathCredit === null &&
+          result.bahaseInggerisCredit === null &&
+          result.cgpaEnough === null
+        ) {
+          if (result.bahasaMelayuCredit) {
+            console.log("You are eligible for this programme");
+            applyResultMsg = "You are eligible for this programme";
+          } else {
+            console.log(
+              "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation"
+            );
+            applyResultMsg =
+              "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation";
+          }
+          updateResult();
+        } else {
+          console.log("You are not eligible for this programme");
+          applyResultMsg = "You are not eligible for this programme";
+        }
+      } else if (
+        qualification === qualifcationList[3] ||
+        qualification === qualifcationList[4] ||
+        qualification === qualifcationList[5] ||
+        qualification === qualifcationList[6]
+      ) {
+        if (
+          result.mathCredit === null &&
+          result.bahaseInggerisCredit === null &&
+          result.cgpaEnough
+        ) {
+          if (result.bahasaMelayuCredit) {
+            console.log("You are eligible for this programme");
+            applyResultMsg = "You are eligible for this programme";
+          } else {
+            console.log(
+              "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation"
+            );
+            applyResultMsg =
+              "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation";
+          }
+          updateResult();
+        } else {
+          console.log("You are not eligible for this programme");
+          applyResultMsg = "You are not eligible for this programme";
+        }
+      } else if (
+        qualification === qualifcationList[7] ||
+        qualification === qualifcationList[8] ||
+        qualification === qualifcationList[9] ||
+        qualification === qualifcationList[10]
+      ) {
+        if (
+          result.mathCredit &&
+          result.bahaseInggerisCredit &&
+          result.cgpaEnough === null
+        ) {
+          if (result.bahasaMelayuCredit) {
+            console.log("You are eligible for this programme");
+            applyResultMsg = "You are eligible for this programme";
+          } else {
+            console.log(
+              "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation"
+            );
+            applyResultMsg =
+              "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation";
+          }
+          updateResult();
+        } else {
+          console.log("You are not eligible for this programme");
+          applyResultMsg = "You are not eligible for this programme";
+        }
+      } else {
+        if (
+          result.mathCredit &&
+          result.bahaseInggerisCredit &&
+          result.cgpaEnough
+        ) {
+          if (result.bahasaMelayuCredit) {
+            console.log("You are eligible for this programme");
+            applyResultMsg = "You are eligible for this programme";
+          } else {
+            console.log(
+              "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation"
+            );
+            applyResultMsg =
+              "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation";
+          }
+          updateResult();
+        } else {
+          console.log("You are not eligible for this programme");
+          applyResultMsg = "You are not eligible for this programme";
+        }
+      }
+    } else if (
+      // Software Engineering
+      programme === "Bachelor of Computer Science in Data Science" ||
+      programme === "Bachelor of Software Engineering" ||
+      programme ===
+        "Bachelor of Computer Science in Interactive Software Technology"
+    ) {
+      console.log("programme is " + programme);
+      console.log("qualification is " + qualification);
+      console.log("qualification is " + qualifcationList[0]);
+      const result = SoftwareEngineeringAssessment(
+        qualification,
+        cgpa,
+        previousQualification,
+        previousQualificationSubjectsAndGrades
+      );
+      if (
+        qualification === qualifcationList[0] ||
+        qualification === qualifcationList[1] ||
+        qualification === qualifcationList[2]
+      ) {
+        if (
+          result.addMathCredit === null &&
+          result.bahaseInggerisCredit === null &&
+          result.cgpaEnough === null
+        ) {
+          if (result.bahasaMelayuCredit) {
+            console.log("You are eligible for this programme");
+            applyResultMsg = "You are eligible for this programme";
+          } else {
+            console.log(
+              "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation"
+            );
+            applyResultMsg =
+              "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation";
+          }
+          updateResult();
+        } else {
+          console.log("You are not eligible for this programme");
+          applyResultMsg = "You are not eligible for this programme";
+        }
+      } else if (
+        qualification === qualifcationList[3] ||
+        qualification === qualifcationList[4] ||
+        qualification === qualifcationList[5] ||
+        qualification === qualifcationList[6]
+      ) {
+        if (
+          result.addMathCredit === null &&
+          result.bahaseInggerisCredit === null &&
+          result.cgpaEnough
+        ) {
+          if (result.bahasaMelayuCredit) {
+            console.log("You are eligible for this programme");
+            applyResultMsg = "You are eligible for this programme";
+          } else {
+            console.log(
+              "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation"
+            );
+            applyResultMsg =
+              "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation";
+          }
+          updateResult();
+        } else {
+          console.log("You are not eligible for this programme");
+          applyResultMsg = "You are not eligible for this programme";
+        }
+      } else if (
+        qualification === qualifcationList[7] ||
+        qualification === qualifcationList[8] ||
+        qualification === qualifcationList[9] ||
+        qualification === qualifcationList[10]
+      ) {
+        if (
+          result.addMathCredit &&
+          result.bahaseInggerisCredit &&
+          result.cgpaEnough === null
+        ) {
+          if (result.bahasaMelayuCredit) {
+            console.log("You are eligible for this programme");
+            applyResultMsg = "You are eligible for this programme";
+          } else {
+            console.log(
+              "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation"
+            );
+            applyResultMsg =
+              "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation";
+          }
+          updateResult();
+        } else {
+          console.log("You are not eligible for this programme");
+          applyResultMsg = "You are not eligible for this programme";
+        }
+      } else {
+        if (
+          result.addMathCredit &&
+          result.bahaseInggerisCredit &&
+          result.cgpaEnough
+        ) {
+          if (result.bahasaMelayuCredit) {
+            console.log("You are eligible for this programme");
+            applyResultMsg = "You are eligible for this programme";
+          } else {
+            console.log(
+              "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation"
+            );
+            applyResultMsg =
+              "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation";
+          }
+          updateResult();
+        } else {
+          console.log("You are not eligible for this programme");
+          applyResultMsg = "You are not eligible for this programme";
+        }
+      }
+    } else {
+      // Enterprise
+      console.log("programme is " + programme);
+      console.log("qualification is " + qualification);
+      console.log("qualification is " + qualifcationList[0]);
+      const result = EnterprisingAssessment(
+        qualification,
+        cgpa,
+        previousQualification,
+        previousQualificationSubjectsAndGrades
+      );
+      if (
+        qualification === qualifcationList[0] ||
+        qualification === qualifcationList[1] ||
+        qualification === qualifcationList[2]
+      ) {
+        if (
+          result.mathCredit === null &&
+          result.bahaseInggerisCredit === null &&
+          result.cgpaEnough === null
+        ) {
+          if (result.bahasaMelayuCredit) {
+            console.log("You are eligible for this programme");
+            applyResultMsg = "You are eligible for this programme";
+          } else {
+            console.log(
+              "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation"
+            );
+            applyResultMsg =
+              "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation";
+          }
+          updateResult();
+        } else {
+          console.log("You are not eligible for this programme");
+          applyResultMsg = "You are not eligible for this programme";
+        }
+      } else if (
+        qualification === qualifcationList[3] ||
+        qualification === qualifcationList[4] ||
+        qualification === qualifcationList[5] ||
+        qualification === qualifcationList[6]
+      ) {
+        if (
+          result.mathCredit === null &&
+          result.bahaseInggerisCredit === null &&
+          result.cgpaEnough
+        ) {
+          if (result.bahasaMelayuCredit) {
+            console.log("You are eligible for this programme");
+            applyResultMsg = "You are eligible for this programme";
+          } else {
+            console.log(
+              "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation"
+            );
+            applyResultMsg =
+              "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation";
+          }
+          updateResult();
+        } else {
+          console.log("You are not eligible for this programme");
+          applyResultMsg = "You are not eligible for this programme";
+        }
+      } else if (
+        qualification === qualifcationList[7] ||
+        qualification === qualifcationList[8] ||
+        qualification === qualifcationList[9] ||
+        qualification === qualifcationList[10]
+      ) {
+        if (
+          result.mathCredit &&
+          result.bahaseInggerisCredit &&
+          result.cgpaEnough === null
+        ) {
+          if (result.bahasaMelayuCredit) {
+            console.log("You are eligible for this programme");
+            applyResultMsg = "You are eligible for this programme";
+          } else {
+            console.log(
+              "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation"
+            );
+            applyResultMsg =
+              "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation";
+          }
+          updateResult();
+        } else {
+          console.log("You are not eligible for this programme");
+          applyResultMsg = "You are not eligible for this programme";
+        }
+      } else {
+        if (
+          result.mathCredit &&
+          result.bahaseInggerisCredit &&
+          result.cgpaEnough
+        ) {
+          if (result.bahasaMelayuCredit) {
+            console.log("You are eligible for this programme");
+            applyResultMsg = "You are eligible for this programme";
+          } else {
+            console.log(
+              "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation"
+            );
+            applyResultMsg =
+              "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation";
+          }
+          updateResult();
+        } else {
+          console.log("You are not eligible for this programme");
+          applyResultMsg = "You are not eligible for this programme";
+        }
+      }
+    }
+  };
+
+
   return (
     <>
       <div>
         <Result
           style={{
-            display: applyResultMsg === null ? "none" : "block",
+            display: isApplied ? "flex" : "none",
+            height: "80vh",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
           }}
           status="success"
           title="Successfully Applied"
-          subTitle={applyResultMsg + ". \nYou are required to bring along with your original certificates for verification purpose."} 
-          extra={[
-            <Button type="primary">
-
-            </Button>
-          ]}
+          subTitle={"You are required to bring along with your original certificates for verification purpose."}
         />
         <div
           style={{
-
+            display: isApplied ? "none" : "block",
+            padding: "5rem 15rem",
+            margin: "auto",
           }}
         >
           <Spin spinning={loading} tip="Assessing">
             {contextHolder}
             <message message={message} />
-            <div>
+            <div
+              style={{
+                marginBottom: "2rem",
+              }}
+            >
               <h3>Choose your desired programme</h3>
               <Select
                 placeholder="Please select yor desired programme"
@@ -495,25 +908,40 @@ const Application = () => {
               />
             </div>
             {programme !== "" && (
-              <div>
+              <div
+                style={{
+                  marginBottom: "2rem",
+                }}
+              >
                 <h3>Choose your qualifcation</h3>
                 <Cascader
                   options={qualificationOptions}
                   onChange={handleQualificationChange}
                   placeholder="Please select your qualification"
+                  style={{
+                    width: "100%",
+                  }}
                   allowClear={false}
                 />
               </div>
             )}
             {programme !== "" && !hideCgpa && (
-              <div>
+              <div
+                style={{
+                  marginBottom: "2rem",
+                }}
+              >
                 <h3>Enter your CGPA</h3>
                 <CGPA value={cgpa} onChange={handleCgpaChange} />
               </div>
             )}
             {((programme !== "" && qualification !== "" && isCgpaEntered) ||
               (programme !== "" && qualification !== "" && hideCgpa)) && (
-              <div>
+              <div
+                style={{
+                  marginBottom: "2rem",
+                }}
+              >
                 <h3>Upload your {`${getCertName(qualification)}`}</h3>
                 <UploadCert
                   name="cert"
@@ -525,7 +953,11 @@ const Application = () => {
             {((programme !== "" && qualification !== "" && isCgpaEntered) ||
               (programme !== "" && qualification !== "" && hideCgpa)) &&
               fileListSize > 0 && (
-                <div>
+                <div
+                  style={{
+                    marginBottom: "2rem",
+                  }}
+                >
                   <h3>Choose your previous qualifcation</h3>
                   <Select
                     placeholder="Please select your previous qualification"
@@ -545,7 +977,11 @@ const Application = () => {
             {((programme !== "" && qualification !== "" && isCgpaEntered) ||
               (programme !== "" && qualification !== "" && hideCgpa)) &&
               previousQualification !== "" && (
-                <div>
+                <div
+                  style={{
+                    marginBottom: "2rem",
+                  }}
+                >
                   <h3>
                     Upload your {`${getPrevCertName(previousQualification)}`}
                   </h3>
@@ -556,44 +992,52 @@ const Application = () => {
                   />
                 </div>
               )}
-            <Button
-              type="secondary"
-              htmlType="reset"
+            <div
               style={{
-                fontSize: "1rem",
-                height: "auto",
-                marginRight: "2.75rem",
+                display: "flex",
+                justifyContent: "flex-end",
+                marginTop: "1rem",
               }}
-              onClick={reset}
             >
-              Reset
-            </Button>
-            <Button
-              type="primary"
-              htmlType="submit"
-              style={{
-                fontSize: "1rem",
-                height: "auto",
-                marginRight: "2.75rem",
-              }}
-              disabled={
-                (programme !== "" &&
-                  qualification !== "" &&
-                  isCgpaEntered &&
-                  previousQualification !== "" &&
-                  prevFileListSize > 0) ||
-                (programme !== "" &&
-                  qualification !== "" &&
-                  hideCgpa &&
-                  previousQualification !== "" &&
-                  prevFileListSize > 0)
-                  ? false
-                  : true
-              }
-              onClick={handleSubmit}
-            >
-              Submit
-            </Button>
+              <Button
+                type="secondary"
+                htmlType="reset"
+                style={{
+                  fontSize: "1rem",
+                  height: "auto",
+                  marginRight: "2.75rem",
+                }}
+                onClick={reset}
+              >
+                Reset
+              </Button>
+              <Button
+                type="primary"
+                htmlType="submit"
+                style={{
+                  fontSize: "1rem",
+                  height: "auto",
+                  marginRight: "2.75rem",
+                }}
+                disabled={
+                  (programme !== "" &&
+                    qualification !== "" &&
+                    isCgpaEntered &&
+                    previousQualification !== "" &&
+                    prevFileListSize > 0) ||
+                  (programme !== "" &&
+                    qualification !== "" &&
+                    hideCgpa &&
+                    previousQualification !== "" &&
+                    prevFileListSize > 0)
+                    ? false
+                    : true
+                }
+                onClick={handleSubmit}
+              >
+                Submit
+              </Button>
+            </div>
           </Spin>
         </div>
       </div>
@@ -601,370 +1045,6 @@ const Application = () => {
   );
 };
 
-function assessment(
-  qualification,
-  previousQualificationSubjectsAndGrades,
-  cgpa,
-  previousQualification,
-  programme
-) {
-  const updateResult = () => {
-    console.log("user" + loggedUser.applicant_id);
-    const { error } = supabase
-    .from('applicant')
-    .update({ isApplied: 1 })
-    .eq('applicant_id', loggedUser.applicant_id)
-    if (error) {
-      console.log(error)
-      return
-    }
-    console.log("Successfully updated")
-  }
 
-  
-  const qualifcationList = [
-    "Tunku Abdul Rahman University College (TARUMT),Foundation,Foundation In Computing Track A",
-    "Tunku Abdul Rahman University College (TARUMT),Foundation,Foundation In Computing Track B",
-    "Tunku Abdul Rahman University College (TARUMT),Foundation,Foundation In Science Track A",
-    "Tunku Abdul Rahman University College (TARUMT),Diploma,Diploma in Computer Science",
-    "Tunku Abdul Rahman University College (TARUMT),Diploma,Diploma in Information Systems",
-    "Tunku Abdul Rahman University College (TARUMT),Diploma,Diploma in Information Technology",
-    "Tunku Abdul Rahman University College (TARUMT),Diploma,Diploma in Software Engineering",
-    "Pre-University,STPM",
-    "Pre-University,A-Level",
-    "Pre-University,UEC",
-    "Other Institution of Higher Learning (IHL),IHL Foundation",
-    "Other Institution of Higher Learning (IHL),IHL Diploma"
-  ];
-
-  console.log("programme: " + programme);
-
-  if (
-    programme === "Bachelor of Science in Management Mathematics with Computing"
-  ) {
-    // Management Mathematics with Computing
-    console.log("programme is " + programme);
-    console.log("qualification is " + qualification);
-    console.log("qualification is " + qualifcationList[0]);
-    const result = ManagementMathematicsWithComputingAssessment(
-      qualification,
-      cgpa,
-      previousQualification,
-      previousQualificationSubjectsAndGrades
-    );
-    if (
-      qualification === qualifcationList[0] ||
-      qualification === qualifcationList[1] ||
-      qualification === qualifcationList[2]
-    ) {
-      if (
-        result.mathCredit === null &&
-        result.bahaseInggerisCredit === null &&
-        result.cgpaEnough === null
-      ) {
-        if (result.bahasaMelayuCredit) {
-          console.log("You are eligible for this programme");
-          applyResultMsg = "You are eligible for this programme";
-        } else {
-          console.log(
-            "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation"
-          );
-          applyResultMsg = "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation";
-        }
-        updateResult();
-      } else {
-        console.log("You are not eligible for this programme");
-        applyResultMsg = "You are not eligible for this programme";
-      }
-    } else if (
-      qualification === qualifcationList[3] ||
-      qualification === qualifcationList[4] ||
-      qualification === qualifcationList[5] ||
-      qualification === qualifcationList[6]
-    ) {
-      if (
-        result.mathCredit === null &&
-        result.bahaseInggerisCredit === null &&
-        result.cgpaEnough
-      ) {
-        if (result.bahasaMelayuCredit) {
-          console.log("You are eligible for this programme");
-          applyResultMsg = "You are eligible for this programme";
-        } else {
-          console.log(
-            "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation"
-          );
-          applyResultMsg = "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation";
-        }
-        updateResult();
-      } else {
-        console.log("You are not eligible for this programme");
-        applyResultMsg = "You are not eligible for this programme";
-      }
-    } else if (
-      qualification === qualifcationList[7] ||
-      qualification === qualifcationList[8] ||
-      qualification === qualifcationList[9] ||
-      qualification === qualifcationList[10]
-    ) {
-      if (
-        result.mathCredit &&
-        result.bahaseInggerisCredit &&
-        result.cgpaEnough === null
-      ) {
-        if (result.bahasaMelayuCredit) {
-          console.log("You are eligible for this programme");
-          applyResultMsg = "You are eligible for this programme";
-        } else {
-          console.log(
-            "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation"
-          );
-          applyResultMsg = "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation";
-        }
-        updateResult();
-      } else {
-        console.log("You are not eligible for this programme");
-        applyResultMsg = "You are not eligible for this programme";
-      }
-    } else {
-      if (
-        result.mathCredit &&
-        result.bahaseInggerisCredit &&
-        result.cgpaEnough
-      ) {
-        if (result.bahasaMelayuCredit) {
-          console.log("You are eligible for this programme");
-          applyResultMsg = "You are eligible for this programme";
-        } else {
-          console.log(
-            "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation"
-          );
-          applyResultMsg = "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation";
-        }
-        updateResult();
-      } else {
-        console.log("You are not eligible for this programme");
-        applyResultMsg = "You are not eligible for this programme";
-      }
-    }
-  } else if (
-    // Software Engineering
-    programme === "Bachelor of Computer Science in Data Science" ||
-    programme === "Bachelor of Software Engineering" ||
-    programme ===
-      "Bachelor of Computer Science in Interactive Software Technology"
-  ) {
-    console.log("programme is " + programme);
-    console.log("qualification is " + qualification);
-    console.log("qualification is " + qualifcationList[0]);
-    const result = SoftwareEngineeringAssessment(
-      qualification,
-      cgpa,
-      previousQualification,
-      previousQualificationSubjectsAndGrades
-    );
-    if (
-      qualification === qualifcationList[0] ||
-      qualification === qualifcationList[1] ||
-      qualification === qualifcationList[2]
-    ) {
-      if (
-        result.addMathCredit === null &&
-        result.bahaseInggerisCredit === null &&
-        result.cgpaEnough === null
-      ) {
-        if (result.bahasaMelayuCredit) {
-          console.log("You are eligible for this programme");
-          applyResultMsg = "You are eligible for this programme";
-        } else {
-          console.log(
-            "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation"
-          );
-          applyResultMsg = "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation";
-        }
-        updateResult();
-      } else {
-        console.log("You are not eligible for this programme");
-        applyResultMsg = "You are not eligible for this programme";
-      }
-    } else if (
-      qualification === qualifcationList[3] ||
-      qualification === qualifcationList[4] ||
-      qualification === qualifcationList[5] ||
-      qualification === qualifcationList[6]
-    ) {
-      if (
-        result.addMathCredit === null &&
-        result.bahaseInggerisCredit === null &&
-        result.cgpaEnough
-      ) {
-        if (result.bahasaMelayuCredit) {
-          console.log("You are eligible for this programme");
-          applyResultMsg = "You are eligible for this programme";
-        } else {
-          console.log(
-            "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation"
-          );
-          applyResultMsg = "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation";
-        }
-        updateResult();
-      } else {
-        console.log("You are not eligible for this programme");
-        applyResultMsg = "You are not eligible for this programme";
-      }
-    } else if (
-      qualification === qualifcationList[7] ||
-      qualification === qualifcationList[8] ||
-      qualification === qualifcationList[9] ||
-      qualification === qualifcationList[10]
-    ) {
-      if (
-        result.addMathCredit &&
-        result.bahaseInggerisCredit &&
-        result.cgpaEnough === null
-      ) {
-        if (result.bahasaMelayuCredit) {
-          console.log("You are eligible for this programme");
-          applyResultMsg = "You are eligible for this programme";
-        } else {
-          console.log(
-            "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation"
-          );
-          applyResultMsg = "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation";
-        }
-        updateResult();
-      } else {
-        console.log("You are not eligible for this programme");
-        applyResultMsg = "You are not eligible for this programme";
-      }
-    } else {
-      if (
-        result.addMathCredit &&
-        result.bahaseInggerisCredit &&
-        result.cgpaEnough
-      ) {
-        if (result.bahasaMelayuCredit) {
-          console.log("You are eligible for this programme");
-          applyResultMsg = "You are eligible for this programme";
-        } else {
-          console.log(
-            "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation"
-          );
-          applyResultMsg = "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation";
-        }
-        updateResult();
-      } else {
-        console.log("You are not eligible for this programme");
-        applyResultMsg = "You are not eligible for this programme";
-      }
-    }
-  } else {
-    // Enterprise
-    console.log("programme is " + programme);
-    console.log("qualification is " + qualification);
-    console.log("qualification is " + qualifcationList[0]);
-    const result = EnterprisingAssessment(
-      qualification,
-      cgpa,
-      previousQualification,
-      previousQualificationSubjectsAndGrades
-    );
-    if (
-      qualification === qualifcationList[0] ||
-      qualification === qualifcationList[1] ||
-      qualification === qualifcationList[2]
-    ) {
-      if (
-        result.mathCredit === null &&
-        result.bahaseInggerisCredit === null &&
-        result.cgpaEnough === null
-      ) {
-        if (result.bahasaMelayuCredit) {
-          console.log("You are eligible for this programme");
-          applyResultMsg = "You are eligible for this programme";
-        } else {
-          console.log(
-            "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation"
-          );
-          applyResultMsg = "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation";
-        }
-        updateResult();
-      } else {
-        console.log("You are not eligible for this programme");
-        applyResultMsg = "You are not eligible for this programme";
-      }
-    } else if (
-      qualification === qualifcationList[3] ||
-      qualification === qualifcationList[4] ||
-      qualification === qualifcationList[5] ||
-      qualification === qualifcationList[6]
-    ) {
-      if (
-        result.mathCredit === null &&
-        result.bahaseInggerisCredit === null &&
-        result.cgpaEnough
-      ) {
-        if (result.bahasaMelayuCredit) {
-          console.log("You are eligible for this programme");
-          applyResultMsg = "You are eligible for this programme";
-        } else {
-          console.log(
-            "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation"
-          );
-          applyResultMsg = "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation";
-        }
-        updateResult();
-      } else {
-        console.log("You are not eligible for this programme");
-        applyResultMsg = "You are not eligible for this programme";
-      }
-    } else if (
-      qualification === qualifcationList[7] ||
-      qualification === qualifcationList[8] ||
-      qualification === qualifcationList[9] ||
-      qualification === qualifcationList[10]
-    ) {
-      if (
-        result.mathCredit &&
-        result.bahaseInggerisCredit &&
-        result.cgpaEnough === null
-      ) {
-        if (result.bahasaMelayuCredit) {
-          console.log("You are eligible for this programme");
-          applyResultMsg = "You are eligible for this programme";
-        } else {
-          console.log(
-            "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation"
-          );
-          applyResultMsg = "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation";
-        }
-        updateResult();
-      } else {
-        console.log("You are not eligible for this programme");
-        applyResultMsg = "You are not eligible for this programme";
-      }
-    } else {
-      if (
-        result.mathCredit &&
-        result.bahaseInggerisCredit &&
-        result.cgpaEnough
-      ) {
-        if (result.bahasaMelayuCredit) {
-          console.log("You are eligible for this programme");
-          applyResultMsg = "You are eligible for this programme";
-        } else {
-          console.log(
-            "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation"
-          );
-          applyResultMsg = "You are eligible for this programme, but you are required to pass Bahasa Kebangsaan A before graduation";
-        }
-        updateResult();
-      } else {
-        console.log("You are not eligible for this programme");
-        applyResultMsg = "You are not eligible for this programme";
-      }
-    }
-  }
-}
 
 export default Application;

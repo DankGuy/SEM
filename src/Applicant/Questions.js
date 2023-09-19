@@ -216,18 +216,18 @@ const Questions = () => {
                     padding: "1em",
                   }}
                 >
-                  <span
-                    style={{
-                      marginRight: "10px",
-                      marginLeft: "2px",
-                      fontSize: "1rem",
-                    }}
-                  >
-                    <Tooltip title="Answer">
-                      <InfoCircleOutlined />
-                    </Tooltip>
-                  </span>
                   <div style={{ width: "100%", wordBreak: "break-word" }}>
+                    <span
+                      style={{
+                        marginRight: "10px",
+                        marginLeft: "2px",
+                        fontSize: "1rem",
+                      }}
+                    >
+                      <Tooltip title="Answer">
+                        <InfoCircleOutlined />
+                      </Tooltip>
+                    </span>
                     {item.answer}
                   </div>
                 </Card>

@@ -113,6 +113,7 @@ const SignUp = () => {
           >
             <h1 style={{ textAlign: "center" }}>Sign Up</h1>
             <Form.Item
+            hasFeedback
               name="email"
               rules={[
                 {

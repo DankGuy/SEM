@@ -9,6 +9,7 @@ const PersonalInformation = () => {
   const [addressInfo, setAddressInfo] = useState(null);
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [trigger, setTrigger] = useState(0);
 
   const getAddressInfo = (e) => {
     const postcode = e.target.value;
@@ -46,7 +47,7 @@ const PersonalInformation = () => {
 
   useEffect(() => {
     setUser(getUser());
-  }, []);
+  }, [trigger]);
 
   const onFinish = async (values) => {
     let { data, error } = await supabase
@@ -70,6 +71,7 @@ const PersonalInformation = () => {
       return;
     }
     message.success("Personal information updated!");
+    setTrigger(trigger + 1);
   };
 
   return isLoading ? (
@@ -87,6 +89,17 @@ const PersonalInformation = () => {
         layout="vertical"
         form={form}
         onFinish={onFinish}
+        initialValues={{
+          name: user?.name,
+          mykadNo: user?.mykad_no,
+          gender: user?.gender,
+          phone: user?.phone_no,
+          email: user?.email,
+          address: user?.address,
+          postcode: user?.postcode,
+          city: user?.city,
+          state: user?.state,
+        }}
       >
         <div className="header">
           <h3>Personal Information</h3>
@@ -107,7 +120,6 @@ const PersonalInformation = () => {
             <Form.Item
               label="Name (as in MyKad)"
               name="name"
-              initialValue={user?.name}
               rules={[
                 {
                   required: true,
@@ -131,7 +143,6 @@ const PersonalInformation = () => {
             <Form.Item
               label="MyKad No."
               name="mykadNo"
-              initialValue={user?.mykad_no}
               rules={[
                 {
                   required: true,
@@ -167,7 +178,6 @@ const PersonalInformation = () => {
             <Form.Item
               label="Phone Number"
               name="phone"
-              initialValue={user?.phone_no}
               rules={[
                 {
                   required: true,
@@ -192,7 +202,7 @@ const PersonalInformation = () => {
             >
               <Input placeholder="Phone Number" />
             </Form.Item>
-            <Form.Item label="Email" name="email" initialValue={user?.email}>
+            <Form.Item label="Email" name="email">
               <Input placeholder="Email" disabled />
             </Form.Item>
           </div>
@@ -200,7 +210,6 @@ const PersonalInformation = () => {
             <Form.Item
               label="Address"
               name="address"
-              initialValue={user?.address}
               rules={[
                 {
                   required: true,
@@ -213,7 +222,6 @@ const PersonalInformation = () => {
             <Form.Item
               label="Postcode"
               name="postcode"
-              initialValue={user?.postcode}
               rules={[
                 {
                   required: true,
@@ -238,10 +246,10 @@ const PersonalInformation = () => {
             >
               <Input placeholder="Postcode" onChange={getAddressInfo} />
             </Form.Item>
-            <Form.Item label="City" name="city" initialValue={user?.city}>
+            <Form.Item label="City" name="city">
               <Input placeholder="City" disabled />
             </Form.Item>
-            <Form.Item label="State" name="state" initialValue={user?.state}>
+            <Form.Item label="State" name="state">
               <Input placeholder="State" disabled />
             </Form.Item>
           </div>

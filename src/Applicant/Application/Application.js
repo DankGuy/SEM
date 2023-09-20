@@ -1,11 +1,12 @@
 import { Spin, Select, Cascader, Button, message, Result } from "antd";
 import React, { useState, useEffect } from "react";
-import SelectField from "./Components/SelectField";
 import CGPA from "./Components/CGPA";
 import UploadCert from "./Components/UploadCert";
 import SoftwareEngineeringAssessment from "./Assessment Functions/SoftwareEngineering";
 import ManagementMathematicsWithComputingAssessment from "./Assessment Functions/ManagementMath";
 import EnterprisingAssessment from "./Assessment Functions/Enterprise";
+import DiplomaComputerScienceAssessment from "./Assessment Functions/DiplomaComputerScience";
+import DiplomaSoftwareEngineeringAssessment from "./Assessment Functions/DiplomaSoftwareEngineering";
 import { supabase } from "../../supabase-client";
 
 let computingTrackA = false;
@@ -15,7 +16,6 @@ let scienceTrackA = false;
 let applyResultMsg = null;
 
 let loggedUser = null;
-
 
 const Application = () => {
   const T = require("tesseract.js");
@@ -27,6 +27,8 @@ const Application = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const [isApplied, setIsApplied] = useState(false);
   const [trigger, setTrigger] = useState(0);
+  const [programmeOptions, setProgrammeOptions] = useState([]);
+  const [successfullyMessage, setSuccessfullyMessage] = useState("");
 
   // Attributes
   const [qualification, setQualification] = useState("");
@@ -61,11 +63,11 @@ const Application = () => {
 
   useEffect(() => {
     setUser(getUser());
-
   }, []);
 
   useEffect(() => {
     loggedUser = user;
+    getProgrammeOptions();
   }, [user]);
 
   // Options
@@ -124,7 +126,7 @@ const Application = () => {
       value: "Pre-University",
       children: [
         {
-          label: "STPM (Relavant)",
+          label: "STPM",
           value: "STPM",
         },
         {
@@ -168,63 +170,110 @@ const Application = () => {
     },
   ];
 
-  const programmeOptions = [
+  const qualificationOptionsForDiploma = [
     {
-      label: "Bachelor of Science in Management Mathematics with Computing",
-      value: "Bachelor of Science in Management Mathematics with Computing",
+      label: "SPM",
+      value: "SPM",
     },
     {
-      label: "Bachelor of Computer Science in Interactive Software Technology",
-      value: "Bachelor of Computer Science in Interactive Software Technology",
+      label: "O-Level",
+      value: "O-Level",
     },
     {
-      label: "Bachelor of Computer Science in Data Science",
-      value: "Bachelor of Computer Science in Data Science",
-    },
-    {
-      label:
-        "Bachelor of Information Systems in Enterprise Information Systems",
-      value:
-        "Bachelor of Information Systems in Enterprise Information Systems",
-    },
-    {
-      label: "Bachelor of Information Technology in Information Security",
-      value: "Bachelor of Information Technology in Information Security",
-    },
-    {
-      label: "Bachelor of Information Technology in Internet Technology",
-      value: "Bachelor of Information Technology in Internet Technology",
-    },
-    {
-      label:
-        "Bachelor of Information Technology in Software Systems Development",
-      value:
-        "Bachelor of Information Technology in Software Systems Development",
-    },
-    {
-      label: "Bachelor of Software Engineering",
-      value: "Bachelor of Software Engineering",
+      label: "UEC",
+      value: "UEC",
     },
   ];
 
+  const getProgrammeOptions = async () => {
+    try {
+      console.log("applicationData", user.eligibilityList);
+
+      let eligibilityList = user.eligibilityList;
+
+      for (const key in eligibilityList) {
+        if (eligibilityList.hasOwnProperty(key)) {
+          console.log(`${key}: ${eligibilityList[key]}`);
+        }
+      }
+
+      const trueKeys = Object.keys(eligibilityList).filter(
+        (key) => eligibilityList[key] === true
+      );
+
+      console.log("trueKeys", trueKeys);
+
+      // use those keys (id) to get programme name from programme table
+      const { data, error } = await supabase
+        .from("programme")
+        .select("programme_name")
+        .in("id", trueKeys);
+
+      console.log("data", data);
+
+      if (error) {
+        console.log(error);
+        return;
+      }
+
+      // use the data to set programme options
+      const options = data.map((programme) => {
+        return {
+          label: programme.programme_name,
+          value: programme.programme_name,
+        };
+      });
+
+      setProgrammeOptions(options);
+    } catch (error) {
+      console.error("Error fetching program options:", error.message);
+
+      // If there is an error, get the programme options from the database
+      const { data, error: getError } = await supabase
+        .from("programme")
+        .select("programme_name");
+
+      if (getError) {
+        console.log(getError);
+        return;
+      }
+
+      // use the data to set programme options
+      const options = data.map((programme) => {
+        return {
+          label: programme.programme_name,
+          value: programme.programme_name,
+        };
+      });
+
+      setProgrammeOptions(options);
+    }
+  };
+
+  useEffect(() => {
+    // Fetch program options when the component mounts
+    getProgrammeOptions();
+  }, []);
+
   const handleProgrammeChange = (value) => {
     setProgramme(value);
-    if (
-      value === "Bachelor of Science in Management Mathematics with Computing"
-    ) {
+    if (value.toString().includes("Management Mathematics with Computing")) {
       computingTrackA = false;
       computingTrackB = false;
       scienceTrackA = true;
     } else if (
-      value === "Bachelor of Computer Science in Data Science" ||
-      value === "Bachelor of Software Engineering" ||
-      value ===
-        "Bachelor of Computer Science in Interactive Software Technology"
+      value.toString().includes("Data Science") ||
+      value.toString().includes("Software Engineering") ||
+      value.toString().includes("Interactive Software Technology")
     ) {
       computingTrackA = true;
       computingTrackB = false;
       scienceTrackA = false;
-    } else {
+    } else if (
+      value.toString().includes("Enterprise Information System") ||
+      value.toString().includes("Internet Technology") ||
+      value.toString().includes("Information Security")
+    ) {
       computingTrackA = false;
       computingTrackB = true;
       scienceTrackA = false;
@@ -260,12 +309,17 @@ const Application = () => {
       setFileName(uploadedFile.name);
       console.log("Uploaded certificate file name: " + fileName);
 
-      if (qualification.includes("Tunku Abdul Rahman University College (TARUMT)")) {
-        setPreviousQualification("SPM");
-      } else if (qualification.includes("UEC")) {
-        setPreviousQualification("UEC");
+      if (user.eligibilityList === null) {
+        if (
+          qualification.includes(
+            "Tunku Abdul Rahman University College (TARUMT)"
+          )
+        ) {
+          setPreviousQualification("SPM");
+        } else if (qualification.includes("UEC")) {
+          setPreviousQualification("UEC");
+        }
       }
-
     } else {
       // If no files are uploaded, hide the previous qualification select
       setFileListSize(0);
@@ -285,8 +339,7 @@ const Application = () => {
       // Extract the file name
       setFileName(uploadedFile.name);
       console.log("Uploaded previous certificate file name: " + fileName);
-    }
-    else {
+    } else {
       // If no files are uploaded, hide the previous qualification select
       setPrevFileListSize(0);
     }
@@ -309,17 +362,19 @@ const Application = () => {
       return "Foundation Certificate";
     } else if (qualification.includes("IHL Diploma")) {
       return "Diploma Certificate";
+    } else if (qualification.includes("SPM")) {
+      return "SPM Certificate";
+    } else if (qualification.includes("O-Level")) {
+      return "O-Level Certificate";
     }
   };
 
   const getPrevCertName = (prevQualification) => {
     if (prevQualification.includes("SPM")) {
       return "SPM Certificate";
-    }
-    else if (prevQualification.includes("O-Level")) {
+    } else if (prevQualification.includes("O-Level")) {
       return "O-Level Certificate";
-    }
-    else if (prevQualification.includes("UEC")) {
+    } else if (prevQualification.includes("UEC")) {
       return "UEC Certificate";
     }
   };
@@ -348,137 +403,206 @@ const Application = () => {
 
   const sendMessage = (msg) => {
     messageApi.open({
-      type: 'error',
+      type: "error",
       content: msg,
       duration: 2,
     });
   };
 
-  const handleSubmit = async () => {
+  const updateResultForAdyEligible = async () => {
+    // get programme id from programme name
+    const { data, error } = await supabase
+      .from("programme")
+      .select("id")
+      .eq("programme_name", programme);
 
+    console.log("programme id: " + data[0].id);
+
+    // insert row to application table
+    const {
+      data: applicationData,
+      error: applicationError,
+    } = await supabase.from("application").insert([
+      {
+        applicant_id: loggedUser.applicant_id,
+        programme_id: data[0].id,
+      },
+    ]);
+
+    if (applicationError) {
+      console.log(applicationError);
+      return;
+    }
+
+    if (error) {
+      console.log(error);
+      return;
+
+    }
+    console.log("Successfully updated");
+
+    setTrigger(trigger + 1);
+  };
+
+  const handleSubmit = async () => {
     setLoading(true);
 
-    await supabase.storage.from("Certificates").upload(fileName, prevCert, {
-      cacheControl: "3600",
-      upsert: false,
-    });
-    const { data, error } = supabase.storage
-      .from("Certificates")
-      .getPublicUrl(fileName);
-    const url = data.publicUrl;
+    if (user.eligibilityList === null) {
+      await supabase.storage.from("Certificates").upload(fileName, prevCert, {
+        cacheControl: "3600",
+        upsert: false,
+      });
+      const { data, error } = supabase.storage
+        .from("Certificates")
+        .getPublicUrl(fileName);
+      const url = data.publicUrl;
 
-    T.recognize(url).then(({ data: { text } }) => {
-      console.log("text: " + text);
+      T.recognize(url).then(({ data: { text } }) => {
+        console.log("text: " + text);
 
-      if (previousQualification.includes("SPM")) {
-        const regex = /([A-Z\s,]+)\s([A-Z+-]+)\s\([^)]+\)/g;
-        const subjectsAndGrades = [];
+        if (
+          previousQualification.includes("SPM") ||
+          qualification.includes("SPM")
+        ) {
+          const regex = /([A-Z\s,]+)\s([A-Z+-]+)\s\([^)]+\)/g;
+          const subjectsAndGrades = [];
 
-        // Iterate through matches and extract subjects and grades
-        let match;
-        while ((match = regex.exec(text))) {
-          const subject = match[1].trim();
-          const grade = match[2].trim();
-          subjectsAndGrades.push({ subject, grade });
+          // Iterate through matches and extract subjects and grades
+          let match;
+          while ((match = regex.exec(text))) {
+            const subject = match[1].trim();
+            const grade = match[2].trim();
+            subjectsAndGrades.push({ subject, grade });
+          }
+          subjectsAndGrades.forEach(({ subject, grade }) => {
+            console.log(`Subject: ${subject}, Grade: ${grade}`);
+          });
+
+          if (subjectsAndGrades.length === 0) {
+            sendMessage(
+              "No subjects and grades found from your certificate. Please try to upload your certificates in the highest quality."
+            );
+          } else {
+            assessment(
+              qualification.toString(),
+              subjectsAndGrades,
+              cgpa,
+              previousQualification,
+              programme
+            );
+          }
+
+          setLoading(false);
+        } else if (
+          previousQualification === "O-Level" ||
+          qualification === "O-Level"
+        ) {
+          //only can scan add maths
+          const regex = /(ENGLISH|ADDITIONAL MATHEMATICS)\s+([A-Z]+)/g;
+          const subjectsAndGrades = [];
+
+          // Iterate through matches and extract subjects and grades
+          let match;
+          while ((match = regex.exec(text))) {
+            const subject = match[1].trim();
+            const grade = match[2].trim();
+            subjectsAndGrades.push({ subject, grade });
+          }
+          subjectsAndGrades.forEach(({ subject, grade }) => {
+            console.log(`-----Subject: ${subject}, Grade: ${grade}`);
+          });
+
+          if (subjectsAndGrades.length === 0) {
+            sendMessage(
+              "No subjects found from your certificate. Please try to upload your certificates in the highest quality."
+            );
+          } else {
+            assessment(
+              qualification.toString(),
+              subjectsAndGrades,
+              cgpa,
+              previousQualification,
+              programme
+            );
+          }
+
+          setLoading(false);
+        } else if (previousQualification === "UEC" || qualification === "UEC") {
+          const regex = /([A-Z\s,]+)\s([A-Z+-]+)\s\([^)]+\)/g;
+          const subjectsAndGrades = [];
+
+          // Iterate through matches and extract subjects and grades
+          let match;
+          while ((match = regex.exec(text))) {
+            const subject = match[1].trim();
+            const grade = match[2].trim();
+            subjectsAndGrades.push({ subject, grade });
+          }
+          subjectsAndGrades.forEach(({ subject, grade }) => {
+            console.log(`Subject: ${subject}, Grade: ${grade}`);
+          });
+
+          if (subjectsAndGrades.length === 0) {
+            sendMessage(
+              "No subjects found from your certificate. Please try to upload your certificates in the highest quality."
+            );
+          } else {
+            assessment(
+              qualification.toString(),
+              subjectsAndGrades,
+              cgpa,
+              previousQualification,
+              programme
+            );
+          }
+
+          setLoading(false);
         }
-        subjectsAndGrades.forEach(({ subject, grade }) => {
-          console.log(`Subject: ${subject}, Grade: ${grade}`);
-        });
-
-        if(subjectsAndGrades.length === 0) {
-          sendMessage("No subjects and grades found from your certificate. Please try to upload your certificates in the highest quality.");
-        }else{
-          assessment(
-            qualification.toString(),
-            subjectsAndGrades,
-            cgpa,
-            previousQualification,
-            programme
-          );
-        }
-
-        setLoading(false);
-
-      } else if (previousQualification === "O-Level") { //only can scan add maths
-        const regex = /(ENGLISH|ADDITIONAL MATHEMATICS)\s+([A-Z]+)/g
-        const subjectsAndGrades = [];
-
-
-        
-        // Iterate through matches and extract subjects and grades
-        let match;
-        while ((match = regex.exec(text))) {
-          const subject = match[1].trim();
-          const grade = match[2].trim();
-          subjectsAndGrades.push({ subject, grade });
-        }
-        subjectsAndGrades.forEach(({ subject, grade }) => {
-          console.log(`-----Subject: ${subject}, Grade: ${grade}`);
-        });
-
-
-        if(subjectsAndGrades.length === 0) {
-          sendMessage("No subjects found from your certificate. Please try to upload your certificates in the highest quality.");
-        }else{
-          assessment(
-            qualification.toString(),
-            subjectsAndGrades,
-            cgpa,
-            previousQualification,
-            programme
-          );
-        }
-
-        setLoading(false);
-      }
-      else if (previousQualification === "UEC") {
-        const regex = /([A-Z\s,]+)\s([A-Z+-]+)\s\([^)]+\)/g;
-        const subjectsAndGrades = [];
-
-        // Iterate through matches and extract subjects and grades
-        let match;
-        while ((match = regex.exec(text))) {
-          const subject = match[1].trim();
-          const grade = match[2].trim();
-          subjectsAndGrades.push({ subject, grade });
-        }
-        subjectsAndGrades.forEach(({ subject, grade }) => {
-          console.log(`Subject: ${subject}, Grade: ${grade}`);
-        });
-
-        if(subjectsAndGrades.length === 0) {
-          sendMessage("No subjects found from your certificate. Please try to upload your certificates in the highest quality.");
-        }else{
-          assessment(
-            qualification.toString(),
-            subjectsAndGrades,
-            cgpa,
-            previousQualification,
-            programme
-          );
-        }
-
-        setLoading(false);
-      }
-    });
+      });
+    }
+    else{
+      updateResultForAdyEligible();
+    }
   };
 
   async function fetchData() {
     try {
-          const { data, error } = await supabase
-            .from("applicant")
-            .select("*")
-            .eq("applicant_id", user.applicant_id);
+      // check if user exists in application table
+      const { data: applicationData, error: applicationError } = await supabase
+        .from("application")
+        .select("*")
+        .eq("applicant_id", user.applicant_id);
 
-          if (error) {
-            console.log(error);
-            return;
-          }
+      if (applicationError) {
+        console.log(applicationError);
+        return;
+      }
 
-          if (data[0].isApplied === 1) {
-            setIsApplied(true);
-          }
-        } catch (error) {
+      if (applicationData.length > 0) {
+        setIsApplied(true);
+
+        // get programme name from programme id
+        const { data, error } = await supabase
+          .from("programme")
+          .select("programme_name")
+          .eq("id", applicationData[0].programme_id);
+
+        if (error) {
+          console.log(error);
+          return;
+        }
+
+        // 2023-09-20T09:43:24.150346 convert to 20/09/2023 and 09:43:24
+        const date = applicationData[0].date_applied.split("T")[0];
+
+        setSuccessfullyMessage(
+          "You have successfully applied for " +
+            data[0].programme_name +
+            " on " +
+            date
+        );
+      }
+    } catch (error) {
       console.error("Error fetching data:", error.message);
     }
   }
@@ -496,10 +620,30 @@ const Application = () => {
     programme
   ) => {
     const updateResult = async () => {
-      const { error } = await supabase
-        .from("applicant")
-        .update({ isApplied: 1 })
-        .eq("applicant_id", user.applicant_id);
+      // get programme id from programme name
+      const { data, error } = await supabase
+        .from("programme")
+        .select("id")
+        .eq("programme_name", programme);
+
+      console.log("programme id: " + data[0].id);
+
+      // insert row to application table
+      const {
+        data: applicationData,
+        error: applicationError,
+      } = await supabase.from("application").insert([
+        {
+          applicant_id: loggedUser.applicant_id,
+          programme_id: data[0].id,
+        },
+      ]);
+
+      if (applicationError) {
+        console.log(applicationError);
+        return;
+      }
+
       if (error) {
         console.log(error);
         return;
@@ -507,7 +651,6 @@ const Application = () => {
       console.log("Successfully updated");
       setTrigger(trigger + 1);
     };
-
     const qualifcationList = [
       "Tunku Abdul Rahman University College (TARUMT),Foundation,Foundation In Computing Track A",
       "Tunku Abdul Rahman University College (TARUMT),Foundation,Foundation In Computing Track B",
@@ -526,8 +669,7 @@ const Application = () => {
     console.log("programme: " + programme);
 
     if (
-      programme ===
-      "Bachelor of Science in Management Mathematics with Computing"
+      programme.toString().includes("Management Mathematics with Computing")
     ) {
       // Management Mathematics with Computing
       console.log("programme is " + programme);
@@ -539,7 +681,9 @@ const Application = () => {
         previousQualification,
         previousQualificationSubjectsAndGrades
       );
+
       if (
+        //foundation tarc
         qualification === qualifcationList[0] ||
         qualification === qualifcationList[1] ||
         qualification === qualifcationList[2]
@@ -565,16 +709,13 @@ const Application = () => {
           applyResultMsg = "You are not eligible for this programme";
         }
       } else if (
+        //diploma tarc
         qualification === qualifcationList[3] ||
         qualification === qualifcationList[4] ||
         qualification === qualifcationList[5] ||
         qualification === qualifcationList[6]
       ) {
-        if (
-          result.mathCredit === null &&
-          result.bahaseInggerisCredit === null &&
-          result.cgpaEnough
-        ) {
+        if (result.cgpaEnough) {
           if (result.bahasaMelayuCredit) {
             console.log("You are eligible for this programme");
             applyResultMsg = "You are eligible for this programme";
@@ -598,8 +739,7 @@ const Application = () => {
       ) {
         if (
           result.mathCredit &&
-          result.bahaseInggerisCredit &&
-          result.cgpaEnough === null
+          (result.bahaseInggerisCredit || result.bahaseInggerisPass)
         ) {
           if (result.bahasaMelayuCredit) {
             console.log("You are eligible for this programme");
@@ -619,7 +759,7 @@ const Application = () => {
       } else {
         if (
           result.mathCredit &&
-          result.bahaseInggerisCredit &&
+          (result.bahaseInggerisCredit || result.bahaseInggerisPass) &&
           result.cgpaEnough
         ) {
           if (result.bahasaMelayuCredit) {
@@ -640,10 +780,9 @@ const Application = () => {
       }
     } else if (
       // Software Engineering
-      programme === "Bachelor of Computer Science in Data Science" ||
-      programme === "Bachelor of Software Engineering" ||
-      programme ===
-        "Bachelor of Computer Science in Interactive Software Technology"
+      programme.toString().includes("Software Engineering") ||
+      programme.toString().includes("Data Science") ||
+      programme.toString().includes("Interactive Software Technology")
     ) {
       console.log("programme is " + programme);
       console.log("qualification is " + qualification);
@@ -685,11 +824,7 @@ const Application = () => {
         qualification === qualifcationList[5] ||
         qualification === qualifcationList[6]
       ) {
-        if (
-          result.addMathCredit === null &&
-          result.bahaseInggerisCredit === null &&
-          result.cgpaEnough
-        ) {
+        if (result.cgpaEnough) {
           if (result.bahasaMelayuCredit) {
             console.log("You are eligible for this programme");
             applyResultMsg = "You are eligible for this programme";
@@ -713,8 +848,7 @@ const Application = () => {
       ) {
         if (
           result.addMathCredit &&
-          result.bahaseInggerisCredit &&
-          result.cgpaEnough === null
+          (result.bahaseInggerisCredit || result.bahaseInggerisPass)
         ) {
           if (result.bahasaMelayuCredit) {
             console.log("You are eligible for this programme");
@@ -734,7 +868,7 @@ const Application = () => {
       } else {
         if (
           result.addMathCredit &&
-          result.bahaseInggerisCredit &&
+          (result.bahaseInggerisCredit || result.bahaseInggerisPass) &&
           result.cgpaEnough
         ) {
           if (result.bahasaMelayuCredit) {
@@ -753,8 +887,12 @@ const Application = () => {
           applyResultMsg = "You are not eligible for this programme";
         }
       }
-    } else {
+    } else if (
       // Enterprise
+      programme.toString().includes("Enterprise Information System") ||
+      programme.toString().includes("Internet Technology") ||
+      programme.toString().includes("Information Security")
+    ) {
       console.log("programme is " + programme);
       console.log("qualification is " + qualification);
       console.log("qualification is " + qualifcationList[0]);
@@ -795,11 +933,7 @@ const Application = () => {
         qualification === qualifcationList[5] ||
         qualification === qualifcationList[6]
       ) {
-        if (
-          result.mathCredit === null &&
-          result.bahaseInggerisCredit === null &&
-          result.cgpaEnough
-        ) {
+        if (result.cgpaEnough) {
           if (result.bahasaMelayuCredit) {
             console.log("You are eligible for this programme");
             applyResultMsg = "You are eligible for this programme";
@@ -821,11 +955,7 @@ const Application = () => {
         qualification === qualifcationList[9] ||
         qualification === qualifcationList[10]
       ) {
-        if (
-          result.mathCredit &&
-          result.bahaseInggerisCredit &&
-          result.cgpaEnough === null
-        ) {
+        if (result.mathCredit && result.bahaseInggerisCredit) {
           if (result.bahasaMelayuCredit) {
             console.log("You are eligible for this programme");
             applyResultMsg = "You are eligible for this programme";
@@ -844,7 +974,7 @@ const Application = () => {
       } else {
         if (
           result.mathCredit &&
-          result.bahaseInggerisCredit &&
+          (result.bahaseInggerisCredit || result.bahaseInggerisPass) &&
           result.cgpaEnough
         ) {
           if (result.bahasaMelayuCredit) {
@@ -863,9 +993,47 @@ const Application = () => {
           applyResultMsg = "You are not eligible for this programme";
         }
       }
+    } else {
+      // diploma programme
+      if (programme.toString().includes("Diploma in Computer Science")) {
+        const result = DiplomaComputerScienceAssessment(
+          qualification,
+          previousQualificationSubjectsAndGrades
+        );
+
+        if (
+          result.addMathCredit &&
+          (result.bahaseInggerisCredit || result.bahaseInggerisPass) &&
+          result.bahasaMelayuPass
+        ) {
+          console.log("You are eligible for this programme");
+          applyResultMsg = "You are eligible for this programme";
+          updateResult();
+        } else {
+          console.log("You are not eligible for this programme");
+          applyResultMsg = "You are not eligible for this programme";
+        }
+      } else {
+        const result = DiplomaSoftwareEngineeringAssessment(
+          qualification,
+          previousQualificationSubjectsAndGrades
+        );
+
+        if (
+          result.mathCredit &&
+          (result.bahaseInggerisCredit || result.bahaseInggerisPass) &&
+          result.bahasaMelayuPass
+        ) {
+          console.log("You are eligible for this programme");
+          applyResultMsg = "You are eligible for this programme";
+          updateResult();
+        } else {
+          console.log("You are not eligible for this programme");
+          applyResultMsg = "You are not eligible for this programme";
+        }
+      }
     }
   };
-
 
   return (
     <>
@@ -880,7 +1048,7 @@ const Application = () => {
           }}
           status="success"
           title="Successfully Applied"
-          subTitle={"You are required to bring along with your original certificates for verification purpose."}
+          subTitle={successfullyMessage}
         />
         <div
           style={{
@@ -919,12 +1087,24 @@ const Application = () => {
                   onChange={handleQualificationChange}
                   placeholder="Please select your qualification"
                   style={{
+                    display: programme.includes("Diploma") ? "none" : "block",
+                    width: "100%",
+                  }}
+                  allowClear={false}
+                />
+                <Select
+                  options={qualificationOptionsForDiploma}
+                  onChange={handleQualificationChange}
+                  placeholder="Please select your qualification"
+                  style={{
+                    display: programme.includes("Diploma") ? "block" : "none",
                     width: "100%",
                   }}
                   allowClear={false}
                 />
               </div>
             )}
+
             {programme !== "" && !hideCgpa && (
               <div
                 style={{
@@ -952,6 +1132,8 @@ const Application = () => {
             )}
             {((programme !== "" && qualification !== "" && isCgpaEntered) ||
               (programme !== "" && qualification !== "" && hideCgpa)) &&
+              !programme.includes("Diploma") &&
+              user.eligibilityList === null &&
               fileListSize > 0 && (
                 <div
                   style={{
@@ -1029,7 +1211,15 @@ const Application = () => {
                     qualification !== "" &&
                     hideCgpa &&
                     previousQualification !== "" &&
-                    prevFileListSize > 0)
+                    prevFileListSize > 0) ||
+                  (programme !== "" &&
+                    programme.includes("Diploma") &&
+                    qualification !== "" &&
+                    fileListSize > 0) ||
+                  (programme !== "" &&
+                    qualification !== "" &&
+                    user.eligibilityList !== null &&
+                    fileListSize > 0)
                     ? false
                     : true
                 }
@@ -1044,7 +1234,5 @@ const Application = () => {
     </>
   );
 };
-
-
 
 export default Application;

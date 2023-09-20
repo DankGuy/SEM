@@ -6,9 +6,10 @@ const Assessment = (
   ) => {
     let bahasaMelayuCredit = false;
     let bahaseInggerisCredit = false;
+    let bahaseInggerisPass = false;
     let mathCredit = false;
     let cgpaEnough = false;
-  
+
     console.log(typeof previousQualificationSubjectsAndGrades);
   
     if (
@@ -36,6 +37,7 @@ const Assessment = (
           bahasaMelayuCredit = true;
         }
         bahaseInggerisCredit = null;
+        bahaseInggerisPass = null;
         cgpaEnough = null;
         mathCredit = null;
       });
@@ -77,6 +79,7 @@ const Assessment = (
       qualification === "Other Institution of Higher Learning (IHL),IHL Foundation"
     ) {
       if (previousQualification === "SPM") {
+        bahaseInggerisCredit = null;
         previousQualificationSubjectsAndGrades.forEach(({ subject, grade }) => {
           if (
             subject === "BAHASA MELAYU" &&
@@ -93,7 +96,9 @@ const Assessment = (
           }
           if (
             subject === "BAHASA INGGERIS" &&
-            (grade === "C" ||
+            (grade === "E" ||
+              grade === "D" ||
+              grade === "C" ||
               grade === "C+" ||
               grade === "B-" ||
               grade === "B" ||
@@ -102,7 +107,7 @@ const Assessment = (
               grade === "A" ||
               grade === "A+")
           ) {
-            bahaseInggerisCredit = true;
+            bahaseInggerisPass = true;
           }
           if (
             (subject === "MATEMATIK" ||
@@ -122,6 +127,7 @@ const Assessment = (
         });
       }
       else if (previousQualification === "O-Level") {
+        bahaseInggerisCredit = null;
           previousQualificationSubjectsAndGrades.forEach(({ subject, grade }) => {
             if (
               subject === "BAHASA MELAYU" &&
@@ -138,7 +144,57 @@ const Assessment = (
             }
             if (
               subject === "BAHASA INGGERIS" &&
+              (grade === "E" ||
+                grade === "D" ||
+                grade === "C" ||
+                grade === "C+" ||
+                grade === "B-" ||
+                grade === "B" ||
+                grade === "B+" ||
+                grade === "A-" ||
+                grade === "A" ||
+                grade === "A+")
+            ) {
+              bahaseInggerisPass = true;
+            }
+            if (
+              (subject === "MATEMATIK" ||
+                subject === "MATHEMATICS") &&
               (grade === "C" ||
+                grade === "C+" ||
+                grade === "B-" ||
+                grade === "B" ||
+                grade === "B+" ||
+                grade === "A-" ||
+                grade === "A" ||
+                grade === "A+")
+            ) {
+              mathCredit = true;
+            }
+            cgpaEnough = null;
+          });
+        }
+        else if (previousQualification === "UEC") {
+          bahaseInggerisPass = null;
+          previousQualificationSubjectsAndGrades.forEach(({ subject, grade }) => {
+            if (
+              subject === "BAHASA MELAYU" &&
+              (grade === "C" ||
+                grade === "C+" ||
+                grade === "B-" ||
+                grade === "B" ||
+                grade === "B+" ||
+                grade === "A-" ||
+                grade === "A" ||
+                grade === "A+")
+            ) {
+              bahasaMelayuCredit = true;
+            }
+            if (
+              subject === "BAHASA INGGERIS" &&
+              (grade === "E" ||
+                grade === "D" ||
+                grade === "C" ||
                 grade === "C+" ||
                 grade === "B-" ||
                 grade === "B" ||
@@ -150,8 +206,8 @@ const Assessment = (
               bahaseInggerisCredit = true;
             }
             if (
-              (subject === "MATEMATIK" ||
-                subject === "MATHEMATICS") &&
+              (subject === "MATEMATIK TAMBAHAN" ||
+                subject === "ADDITIONAL MATHEMATICS") &&
               (grade === "C" ||
                 grade === "C+" ||
                 grade === "B-" ||
@@ -177,6 +233,7 @@ const Assessment = (
     const result = {
       bahasaMelayuCredit,
       bahaseInggerisCredit,
+      bahaseInggerisPass,
       mathCredit,
       cgpaEnough,
     };

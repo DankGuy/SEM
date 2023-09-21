@@ -36,6 +36,10 @@ const ApplicantLayout = () => {
       label: "Personal Information",
     },
     {
+      key: "/staffDirectory",
+      label: "Staff Directory",
+    },
+    {
       key: "/",
       label: "Logout",
     },

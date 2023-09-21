@@ -2,6 +2,7 @@ import StaffCategory from './StaffCategory'
 import SearchBar from './SearchBar'
 import { supabase } from "../supabase-client"
 import { useEffect, useState } from 'react'
+import { Skeleton } from 'antd'
 
 function StaffDirectory() {
     const [fetchError, setFetchError] = useState(null)
@@ -172,7 +173,7 @@ function StaffDirectory() {
         <div className='staffDirectoryContainer'>
             <div style={{flex:1}}>
                 {fetchError && <p>{fetchError}</p>}
-                {staffDetails && <StaffCategory department={departments} staff={staffDetails}/>}
+                {staffDetails ? <StaffCategory department={departments} staff={staffDetails} /> : <Skeleton active />}
             </div>
             <div style={{width:400}}>
                 <SearchBar filterObjectArr={filterObjectArr} onSearch={onSearch}/>

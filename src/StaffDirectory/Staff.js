@@ -1,4 +1,4 @@
-import { Descriptions } from "antd"
+import { Descriptions, Skeleton } from "antd"
 import { Link, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from 'react'
 import { supabase } from "../supabase-client"
@@ -53,12 +53,12 @@ function Staff() {
             {
                 key: '2',
                 label: 'Department',
-                children: staffDetail.department,
+                children: <div>{staffDetail.department}</div> ,
             },
             {
                 key: '3',
                 label: 'Education',
-                children: staffDetail.education,
+                children: <div>{staffDetail.education}</div>,
             },
             {
                 key: '4',
@@ -71,12 +71,12 @@ function Staff() {
             {
                 key: '5',
                 label: 'Specialization',
-                children: staffDetail.specialization,
+                children: <div>{staffDetail.specialization}</div>,
             },
             {
                 key: '6',
                 label: 'Area of Interest',
-                children: staffDetail['areaOfInterest'],
+                children: <div>{staffDetail['areaOfInterest']}</div> ,
             }
         ];
         console.log(items)
@@ -86,15 +86,15 @@ function Staff() {
     return(
         <div className="staffDetailContainer">
             {fetchStaffError && <p>{fetchStaffError}</p>}
-            {staffDetail && 
+            {staffDetail ? 
                 <div className="staffDescriptionContainer">
-                    <Descriptions 
-                        title={<strong>{staffDetail.name}</strong>}
-                        layout="horizontal" 
-                        items={items} 
-                        column={1}
-                        />
+                    <Descriptions title={<strong>{staffDetail.name}</strong>} layout="horizontal" items={items} column={1}/>
                     <img src={staffDetail.imageUrl} alt='Staff'/>
+                </div>
+                : 
+                <div className="staffDescriptionContainer">
+                    <Skeleton active style={{marginRight:20}}/>
+                    <Skeleton.Image active style={{height:'100%', width:120}}/>
                 </div>
             }
         </div>

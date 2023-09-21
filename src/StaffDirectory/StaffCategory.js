@@ -1,8 +1,9 @@
 import { Collapse } from 'antd';
 import './StaffCategory.css'
-import { Link } from 'react-router-dom';
+import StaffInCategory from './StaffInCategory';
 
 function StaffCategory(props) {
+    
     if(props.department === undefined || props.staff === undefined) {
         return (
             <div></div>
@@ -12,16 +13,8 @@ function StaffCategory(props) {
         // only the staff that is in each department
         const departmentStaff = props.staff.filter((staff) => staff.departmentid.search(department.id))
         const staffInDepartment = departmentStaff.map((staff) => {
-            return (
-                <div key={staff.id} className={'collapseContent'}>
-                    <Link to={`staff?id=${staff.id}`} state={'a'}>
-                        <img src={staff.imageUrl} alt='Staff'/>
-                        <h4>{staff.name}</h4>
-                        <p>{staff.contact}</p>
-                    </Link>
-                </div>
-            )}
-        )
+            return <StaffInCategory key={staff.id} staff={staff} />
+        })
 
         return(
             {

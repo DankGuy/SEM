@@ -10,6 +10,10 @@ import Application from "./Applicant/Application/Application";
 import PersonalInformation from "./Applicant/PersonalInformation";
 import Questions from "./Applicant/Questions";
 
+//programme
+import ProgrammeMain from "./Programme/ProgrammeMain";
+import ProgrammeDetails from "./Programme/details";
+
 import Admin from "./Admin/Admin";
 import AdminLayout from "./Admin/AdminLayout";
 import AdminQuestions from "./Admin/Questions";
@@ -39,7 +43,12 @@ function App() {
               <Route path="questions" element={<Questions />} />
               <Route path="*" element={<NotFound />} />
             </Route>
-            <Route path="*" element={<NotFound />} />
+
+              <Route path="/Programme/" element={<ProgrammeMain />}>
+                <Route path="programmeDetails" element={<ProgrammeDetails />} />
+                <Route path="*" element={<NotFound />} />
+              </Route>
+
           </>
         );
       } else {

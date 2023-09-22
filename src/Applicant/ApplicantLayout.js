@@ -26,6 +26,9 @@ const ApplicantLayout = () => {
     {
       key: "/applicant/application",
       label: "Application",
+    },{
+      key: "/Programme",
+      label: "Programme"
     },
     {
       key: "/applicant/questions",

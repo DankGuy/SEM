@@ -89,7 +89,9 @@ function Staff() {
             {staffDetail ? 
                 <div className="staffDescriptionContainer">
                     <Descriptions title={<strong>{staffDetail.name}</strong>} layout="horizontal" items={items} column={1}/>
-                    <img src={staffDetail.imageUrl} alt='Staff'/>
+                    <div id="staffImageDiv">
+                        <img src={staffDetail.imageUrl} alt='Staff'/>
+                    </div>
                 </div>
                 : 
                 <div className="staffDescriptionContainer">

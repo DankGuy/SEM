@@ -2,7 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { useState, useEffect } from "react";
 
 const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
-const supabaseKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
+const supabaseKey = process.env.REACT_APP_ANON_KEY;
 
 export const useCheckLogin = () => {
   const [session, setSession] = useState(null);

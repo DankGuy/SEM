@@ -14,8 +14,12 @@
     justify-content: space-between;
 }
 
-.staffDescriptionContainer > img {
-    max-width: 400px;
+#staffImageDiv {
+    max-width: 300px;
+}
+
+#staffImageDiv {
+    margin: auto;
 }
 
 .role {

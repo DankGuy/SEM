@@ -2,9 +2,13 @@ import { Skeleton } from "antd";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
-function StaffInCategory(props) {
+function StaffInCategory(props) {    
     const [loaded, setLoaded] = useState(false);
 
+    const fontStyle = {
+        color: '#777777'
+    }
+    
     const imgStyle = {
         // display: loaded ? 'block' : 'none'
         display: loaded ? 'block': 'none'
@@ -24,8 +28,8 @@ function StaffInCategory(props) {
             <Link to={`staff?id=${props.staff.id}`} state={'a'}>
                 { !loaded && <Skeleton.Image active />}
                 <img src={props.staff.imageUrl} alt='Staff' style={imgStyle} onLoad={handleImageLoad()}/>
-                <h4>{props.staff.name}</h4>
-                <p>{props.staff.contact}</p>
+                <h4 style={fontStyle}>{props.staff.name}</h4>
+                <p style={fontStyle}> {props.staff.contact}</p>
             </Link>
         </div>
     )

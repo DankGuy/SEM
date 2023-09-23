@@ -1,11 +1,11 @@
-import React from "react";
-import { Button, Form, Input, Card, message } from "antd";
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { supabase } from "../supabase-client";
-import TarumtLogo from "../images/tarumt-logo.png";
-import LoginIllustration from "../images/login-illustration.jpg";
-import "./auth.css";
+import React from 'react';
+import { Button, Form, Input, Card, message } from 'antd';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { supabase } from '../supabase-client';
+import TarumtLogo from '../images/tarumt-logo.png';
+import LoginIllustration from '../images/login-illustration.jpg';
+import './auth.css';
 
 const formItemLayout = {
   wrapperCol: {
@@ -25,7 +25,7 @@ const SignIn = () => {
 
   const [isHovered, setIsHovered] = useState(false);
   const hoverStyle = {
-    color: isHovered ? "#430f58" : "#6643b5",
+    color: isHovered ? '#430f58' : '#6643b5',
   };
 
   const signIn = async (values) => {
@@ -41,11 +41,10 @@ const SignIn = () => {
       message.error(error.message);
     } else {
       if (user && session) {
-        if (user.user_metadata.userType === "applicant") {
-          navigate("/applicant");
-        }
-        else {
-          navigate("/admin");
+        if (user.user_metadata.userType === 'applicant') {
+          navigate('/applicant');
+        } else {
+          navigate('/admin/questions');
         }
       }
     }
@@ -53,124 +52,124 @@ const SignIn = () => {
 
   return (
     <div
-      className="signin-container"
+      className='signin-container'
       style={{
-        backgroundColor: "#FFFFFF",
-        minHeight: "100vh",
-        maxWidth: "100vw",
-        height: "auto",
-        width: "100vw",
-        display: "flex",
-        padding: "0",
-        margin: "0",
-        justifyContent: "center",
-        alignItems: "center",
+        backgroundColor: '#FFFFFF',
+        minHeight: '100vh',
+        maxWidth: '100vw',
+        height: 'auto',
+        width: '100vw',
+        display: 'flex',
+        padding: '0',
+        margin: '0',
+        justifyContent: 'center',
+        alignItems: 'center',
       }}
     >
       <div
-        className="signin-left-container"
+        className='signin-left-container'
         style={{
-          height: "100vh",
-          maxHeight: "100vh",
-          width: "50vw",
-          display: "flex",
-          flexDirection: "column",
-          marginRight: "150px",
+          height: '100vh',
+          maxHeight: '100vh',
+          width: '50vw',
+          display: 'flex',
+          flexDirection: 'column',
+          marginRight: '150px',
         }}
       >
         <div
-          className="logo-container"
+          className='logo-container'
           style={{
-            width: "100%",
-            height: "30%",
+            width: '100%',
+            height: '30%',
             backgroundImage: `url(${TarumtLogo})`,
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
           }}
         ></div>
         <div
-          className="illustration-container"
+          className='illustration-container'
           style={{
-            width: "100%",
-            height: "70%",
+            width: '100%',
+            height: '70%',
             backgroundImage: `url(${LoginIllustration})`,
-            backgroundSize: "55vw 100vh",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
+            backgroundSize: '55vw 100vh',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
           }}
         ></div>
       </div>
       <div
-        className="signin-card"
+        className='signin-card'
         style={{
-          height: "auto",
-          width: "30vw",
-          marginTop: "40px",
-          marginBottom: "40px",
-          marginLeft: "0",
-          marginRight: "0",
-          display: "flex",
-          alignItems: "center",
-          flexDirection: "column",
-          justifyContent: "center",
-          padding: "20px",
-          borderRadius: "10px",
-          overflow: "auto",
-          maxWidth: "100%",
+          height: 'auto',
+          width: '30vw',
+          marginTop: '40px',
+          marginBottom: '40px',
+          marginLeft: '0',
+          marginRight: '0',
+          display: 'flex',
+          alignItems: 'center',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          padding: '20px',
+          borderRadius: '10px',
+          overflow: 'auto',
+          maxWidth: '100%',
         }}
       >
         <Card
           bordered
           style={{
-            width: "100%",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
           }}
         >
           <Form
             {...formItemLayout}
             form={form}
-            name="signIn"
+            name='signIn'
             scrollToFirstError
             colon={true}
             onFinish={signIn}
           >
-            <h1 style={{ textAlign: "center" }}>Sign In</h1>
+            <h1 style={{ textAlign: 'center' }}>Sign In</h1>
             <Form.Item
-              name="email"
+              name='email'
               rules={[
                 {
                   required: true,
-                  message: "Please input your E-mail!",
+                  message: 'Please input your E-mail!',
                 },
               ]}
             >
-              <Input placeholder="E-mail" autoComplete="true" />
+              <Input placeholder='E-mail' autoComplete='true' />
             </Form.Item>
             <Form.Item
-              name="password"
+              name='password'
               rules={[
                 {
                   required: true,
-                  message: "Please input your password!",
+                  message: 'Please input your password!',
                 },
               ]}
             >
-              <Input.Password placeholder="Password" />
+              <Input.Password placeholder='Password' />
             </Form.Item>
 
             <Form.Item>
               <Button
-                type="primary"
-                htmlType="submit"
+                type='primary'
+                htmlType='submit'
                 style={{
-                  backgroundColor: "#0062D1",
-                  borderColor: "#0062D1",
-                  marginTop: "5px",
-                  width: "20vw",
-                  fontSize: "1.2rem",
-                  height: "auto",
+                  backgroundColor: '#0062D1',
+                  borderColor: '#0062D1',
+                  marginTop: '5px',
+                  width: '20vw',
+                  fontSize: '1.2rem',
+                  height: 'auto',
                 }}
               >
                 Sign In
@@ -178,7 +177,7 @@ const SignIn = () => {
             </Form.Item>
           </Form>
           <Link
-            to="/signUp"
+            to='/signUp'
             style={hoverStyle}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}

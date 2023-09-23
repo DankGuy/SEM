@@ -1,35 +1,28 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   LaptopOutlined,
   NotificationOutlined,
   UserOutlined,
-} from "@ant-design/icons";
-import { Breadcrumb, Layout, Menu, theme } from "antd";
-import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { supabase } from "../supabase-client";
+} from '@ant-design/icons';
+import { Breadcrumb, Layout, Menu, theme } from 'antd';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { supabase } from '../supabase-client';
 
 const { Content, Sider, Footer } = Layout;
 
 const items = [
   {
-    key: "/admin",
-    label: "Home",
+    key: '/admin/questions',
+    label: 'Questions',
     style: {
-      marginTop: "10px",
+      marginTop: '10px',
     },
   },
   {
-    key: "/admin/questions",
-    label: "Questions",
+    key: '/',
+    label: 'Logout',
     style: {
-      marginTop: "10px",
-    },
-  },
-  {
-    key: "/",
-    label: "Logout",
-    style: {
-      marginTop: "10px",
+      marginTop: '10px',
     },
   },
 ];
@@ -47,17 +40,17 @@ const AdminLayout = () => {
 
   const signOut = async () => {
     await supabase.auth.signOut().then(() => {
-      navigate("/");
+      navigate('/');
     });
   };
 
   const handleClick = (e) => {
     setCurrent(e.key);
-    if (e.key === "/") {
-      localStorage.removeItem("current");
+    if (e.key === '/') {
+      localStorage.removeItem('current');
       signOut();
     } else {
-      localStorage.setItem("current", e.key);
+      localStorage.setItem('current', e.key);
       navigate(e.key);
     }
   };
@@ -65,13 +58,13 @@ const AdminLayout = () => {
   // Define a breadcrumb data structure based on the current route
   const generateBreadcrumb = () => {
     const pathSegments = location.pathname
-      .split("/")
-      .filter((segment) => segment !== "");
+      .split('/')
+      .filter((segment) => segment !== '');
 
     const breadcrumbData = [];
 
     // Generate breadcrumb items based on path segments
-    let currentPath = "";
+    let currentPath = '';
     for (const segment of pathSegments) {
       currentPath += `/${segment}`;
       const breadcrumbItem = items.find((item) => item.key === currentPath);
@@ -84,7 +77,7 @@ const AdminLayout = () => {
 
   useEffect(() => {
     setBreadcrumb(generateBreadcrumb());
-    setCurrent(localStorage.getItem("current"));
+    setCurrent(localStorage.getItem('current'));
   }, [current]);
 
   useEffect(() => {
@@ -98,19 +91,19 @@ const AdminLayout = () => {
           width={200}
           style={{
             background: colorBgContainer,
-            height: "100vh",
-            position: "fixed",
+            height: '100vh',
+            position: 'fixed',
             left: 0,
             zIndex: 1,
           }}
         >
           <Menu
-            mode="inline"
-            theme="dark"
+            mode='inline'
+            theme='dark'
             onClick={handleClick}
             defaultSelectedKeys={current}
             style={{
-              height: "100%",
+              height: '100%',
               borderRight: 0,
             }}
             items={items}
@@ -118,13 +111,13 @@ const AdminLayout = () => {
         </Sider>
         <Layout
           style={{
-            padding: "0 24px 24px",
+            padding: '0 24px 24px',
             marginLeft: 200,
           }}
         >
           <Breadcrumb
             style={{
-              margin: "16px 0",
+              margin: '16px 0',
             }}
             items={breadcrumb.map((item) => ({
               key: item.key,
@@ -143,7 +136,7 @@ const AdminLayout = () => {
           </Content>
           <Footer
             style={{
-              textAlign: "center",
+              textAlign: 'center',
             }}
           >
             TARUMT FOCS ©2023

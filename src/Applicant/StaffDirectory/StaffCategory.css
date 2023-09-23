@@ -3,6 +3,7 @@
     justify-content: stretch;
     margin: 30px;
     column-gap: 30px;
+    min-height: 70vh;
 }
 
 .searchBarContainer {

@@ -27,7 +27,7 @@ const ApplicantLayout = () => {
       key: "/applicant/application",
       label: "Application",
     },{
-      key: "/Programme",
+      key: "/applicant/programme",
       label: "Programme"
     },
     {
@@ -39,7 +39,7 @@ const ApplicantLayout = () => {
       label: "Personal Information",
     },
     {
-      key: "/staffDirectory",
+      key: "/applicant/staffDirectory",
       label: "Staff Directory",
     },
     {

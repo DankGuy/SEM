@@ -11,8 +11,8 @@ import PersonalInformation from "./Applicant/PersonalInformation";
 import Questions from "./Applicant/Questions";
 
 //programme
-import ProgrammeMain from "./Programme/ProgrammeMain";
-import ProgrammeDetails from "./Programme/details";
+import ProgrammeMain from "./Applicant/Programme/ProgrammeMain";
+import ProgrammeDetails from "./Applicant/Programme/details";
 
 import Admin from "./Admin/Admin";
 import AdminLayout from "./Admin/AdminLayout";
@@ -21,8 +21,8 @@ import AdminQuestions from "./Admin/Questions";
 import { useAuth } from "./Authentication/AuthProvider";
 import NotFound from "./Components/NotFound";
 
-import StaffDirectory from "./StaffDirectory/StaffDirectory";
-import Staff from "./StaffDirectory/Staff";
+import StaffDirectory from "./Applicant/StaffDirectory/StaffDirectory";
+import Staff from "./Applicant/StaffDirectory/Staff";
 
 function App() {
   const { userSession, auth } = useAuth();
@@ -39,16 +39,20 @@ function App() {
             <Route path="/applicant/" element={<ApplicantLayout />}>
               <Route index element={<Applicant />} />
               <Route path="application" element={<Application />} />
-              <Route path="personalInformation" element={<PersonalInformation />} />
+              <Route
+                path="personalInformation"
+                element={<PersonalInformation />}
+              />
               <Route path="questions" element={<Questions />} />
+              <Route path="/applicant/programme/" element={<ProgrammeMain />}>
+                <Route path="programmeDetails" element={<ProgrammeDetails />} />
+              </Route>
+              <Route path="/applicant/staffDirectory" element={<StaffDirectory />} />
+              <Route path="/applicant/staffDirectory/staff" element={<Staff />} />
+
               <Route path="*" element={<NotFound />} />
             </Route>
-
-              <Route path="/Programme/" element={<ProgrammeMain />}>
-                <Route path="programmeDetails" element={<ProgrammeDetails />} />
-                <Route path="*" element={<NotFound />} />
-              </Route>
-
+            <Route path="*" element={<NotFound />} />
           </>
         );
       } else {
@@ -77,8 +81,6 @@ function App() {
         <Route path="/" element={<Navigate to="/signIn" />} />
         <Route path="/signIn" element={<SignIn />} />
         <Route path="/signUp" element={<SignUp />} />
-        <Route path='/staffDirectory' element={< StaffDirectory />} />
-        <Route path='/staffDirectory/staff' element={< Staff />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>

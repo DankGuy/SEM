@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import CardMedia from '@mui/material/CardMedia';
-import Typography from '@mui/material/Typography';
-import { Button, CardActionArea, CardActions } from '@mui/material';
-import { supabase } from '../supabase-client';
-import { Form, Input, Checkbox, List } from 'antd';
-import ProgrammeDetailsModal from './details';
-import './programmeMain.css';
-import ComparisonModal from './comparisonModal';
-import { createRoot } from 'react-dom/client';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import CardMedia from "@mui/material/CardMedia";
+import Typography from "@mui/material/Typography";
+import { Button, CardActionArea, CardActions } from "@mui/material";
+import { supabase } from "../../supabase-client";
+import { Form, Input, Checkbox, List } from "antd";
+import ProgrammeDetailsModal from "./details";
+import "./programmeMain.css";
+import ComparisonModal from "./comparisonModal";
+import { createRoot } from "react-dom/client";
+import { useNavigate } from "react-router-dom";
 
 let loggedUser = null;
 
@@ -27,7 +27,7 @@ const ProgrammeMain = ({ searchTerm, filterType }) => {
   useEffect(() => {
     async function fetchProgrammes() {
       try {
-        const { data, error } = await supabase.from('programme').select('*');
+        const { data, error } = await supabase.from("programme").select("*");
         if (error) {
           throw error;
         } else {
@@ -45,13 +45,13 @@ const ProgrammeMain = ({ searchTerm, filterType }) => {
 
     if (filterType) {
       filteredProgrammes = filteredProgrammes.filter(
-        (item) => item.studyLevel.toLowerCase() === filterType.toLowerCase(),
+        (item) => item.studyLevel.toLowerCase() === filterType.toLowerCase()
       );
     }
 
     if (searchTerm) {
       filteredProgrammes = filteredProgrammes.filter((item) =>
-        item.programme_name.toLowerCase().includes(searchTerm.toLowerCase()),
+        item.programme_name.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -65,9 +65,9 @@ const ProgrammeMain = ({ searchTerm, filterType }) => {
 
     if (user) {
       let { data, error } = await supabase
-        .from('applicant')
-        .select('*')
-        .eq('applicant_id', user.id);
+        .from("applicant")
+        .select("*")
+        .eq("applicant_id", user.id);
 
       if (error) {
         console.log(error);
@@ -89,7 +89,7 @@ const ProgrammeMain = ({ searchTerm, filterType }) => {
   useEffect(() => {
     async function fetchAdditionalData() {
       try {
-        const { data, error } = await supabase.from('applicant').select('*');
+        const { data, error } = await supabase.from("applicant").select("*");
 
         if (error) {
           throw error;
@@ -111,7 +111,7 @@ const ProgrammeMain = ({ searchTerm, filterType }) => {
   const openModal = (programme) => {
     setSelectedProgramme(programme);
     setShowModal(true);
-    console.log('modal opened');
+    console.log("modal opened");
     console.log(programme);
   };
 
@@ -137,18 +137,18 @@ const ProgrammeMain = ({ searchTerm, filterType }) => {
   };
 
   const compareProgrammes = () => {
-    const modalRoot = document.getElementById('root');
+    const modalRoot = document.getElementById("root");
 
-    const modal = document.createElement('div');
-    modal.className = 'modal';
+    const modal = document.createElement("div");
+    modal.className = "modal";
     modalRoot.appendChild(modal);
-    modal.style.display = 'block';
+    modal.style.display = "block";
 
     createRoot(modal).render(
       <ComparisonModal
         selectedProgrammeDetails={selectedProgrammeDetails} // Pass the selected programme details
         onClose={() => modalRoot.removeChild(modal)}
-      />,
+      />
     );
   };
 
@@ -157,16 +157,16 @@ const ProgrammeMain = ({ searchTerm, filterType }) => {
     const details = await Promise.all(
       selectedForComparison.map(async (programId) => {
         const { data, error } = await supabase
-          .from('programme')
-          .select('*')
-          .eq('id', programId);
+          .from("programme")
+          .select("*")
+          .eq("id", programId);
         if (error) {
           console.error(error);
           return null;
         } else {
           return data[0];
         }
-      }),
+      })
     );
     setSelectedProgrammeDetails(details.filter(Boolean));
   };
@@ -180,11 +180,11 @@ const ProgrammeMain = ({ searchTerm, filterType }) => {
   }, [compareMode, selectedForComparison]);
 
   return (
-    <div className='container'>
+    <div className="container">
       <Button onClick={toggleCompareMode}>
-        {compareMode ? 'Exit Compare Mode' : 'Compare Programmes'}
+        {compareMode ? "Exit Compare Mode" : "Compare Programmes"}
       </Button>
-      <div className={compareMode ? 'programme-row' : 'card-container'}>
+      <div className={compareMode ? "programme-row" : "card-container"}>
         {compareMode ? (
           <List
             dataSource={filteredData}
@@ -205,38 +205,38 @@ const ProgrammeMain = ({ searchTerm, filterType }) => {
           />
         ) : (
           filteredData.map((programme) => (
-            <div className='card-item'>
+            <div className="card-item">
               <Card
                 sx={{ maxWidth: 345, minHeight: 355 }}
                 style={{ marginBottom: 50 }}
               >
                 <CardActionArea>
                   <CardMedia
-                    component='img'
-                    height='140'
+                    component="img"
+                    height="140"
                     image={programme.programme_img}
                     alt={programme.programme_name}
                   />
                   <CardContent>
                     <Typography
                       gutterBottom
-                      variant='h5'
-                      component='div'
+                      variant="h5"
+                      component="div"
                       sx={{
-                        fontSize: '18px', // Adjust the font size
+                        fontSize: "18px", // Adjust the font size
                       }}
                     >
                       {programme.programme_name}
                     </Typography>
-                    <Typography variant='body2' color='text.secondary'>
+                    <Typography variant="body2" color="text.secondary">
                       {programme.shortDesc}
                     </Typography>
                   </CardContent>
                 </CardActionArea>
                 <CardActions>
                   <Button
-                    size='small'
-                    color='primary'
+                    size="small"
+                    color="primary"
                     onClick={() => openModal(programme)}
                   >
                     Learn More
@@ -270,12 +270,12 @@ const ProgrammeMain = ({ searchTerm, filterType }) => {
 
 const SearchProgrammes = () => {
   const [form] = Form.useForm();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState(null); // Added this line
   const navigate = useNavigate();
 
   const handleSearchChange = (changedValues) => {
-    setSearchTerm(changedValues.Name || ''); // Update searchTerm as user types
+    setSearchTerm(changedValues.Name || ""); // Update searchTerm as user types
   };
 
   const handleFilterClick = (filterType) => {
@@ -288,22 +288,22 @@ const SearchProgrammes = () => {
   };
 
   return (
-    <div className='container'>
+    <div className="container">
       <div>
         <Form
           form={form}
           onValuesChange={handleSearchChange}
-          className='searchBox'
+          className="searchBox"
         >
-          <Form.Item name={'Name'} style={{ width: '400px' }}>
-            <Input placeholder='Search Programme' autoComplete='name' />
+          <Form.Item name={"Name"} style={{ width: "400px" }}>
+            <Input placeholder="Search Programme" autoComplete="name" />
           </Form.Item>
         </Form>
-        <div style={{ display: 'flex' }} className='category'>
-          <Button onClick={() => handleFilterClick('bachelor')}>
+        <div style={{ display: "flex" }} className="category">
+          <Button onClick={() => handleFilterClick("bachelor")}>
             Bachelor
           </Button>
-          <Button onClick={() => handleFilterClick('Diploma')}>Diploma</Button>
+          <Button onClick={() => handleFilterClick("Diploma")}>Diploma</Button>
           <Button onClick={handleShowAllClick}>Show All Programmes</Button>
           <Button onClick={() => navigate(-1)}>Return Previous Page</Button>
         </div>
